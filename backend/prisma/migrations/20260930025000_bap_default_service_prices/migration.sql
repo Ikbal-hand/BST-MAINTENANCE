@@ -1,0 +1,3 @@
+ALTER TABLE `WorkspaceSettings`
+  ADD COLUMN `transportPrice` INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN `servicePrice` INTEGER NOT NULL DEFAULT 0;

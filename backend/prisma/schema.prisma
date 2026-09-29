@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Workspace {
+  id             String             @id @default(cuid())
+  slug           String             @unique
+  name           String
+  type           String
+  domain         String             @unique
+  contactPhone   String?
+  isActive       Boolean            @default(true)
+  users          User[]
+  stores         Store[]
+  baps           Bap[]
+  invoices       Invoice[]
+  documents      Document[]
+  developerLogs  DeveloperLog[]
+  apiRequestLogs ApiRequestLog[]
+  settings       WorkspaceSettings?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+model WorkspaceSettings {
+  id               String    @id @default(cuid())
+  workspaceId      String    @unique
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  logoDataUrl      String?   @db.LongText
+  signerName       String    @default("Muhamad Zidan Fauzan")
+  bankAccount      String    @default("0548985555")
+  bankName         String    @default("BCA")
+  bankAccountName  String    @default("BERKARYA SATU TUJUAN CV")
+  transportPrice   Int       @default(0)
+  servicePrice     Int       @default(0)
+  signatureDataUrl String?   @db.LongText
+  primaryColor     String    @default("#1C6B4B")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model User {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  name         String
+  email        String    @unique
+  passwordHash String?
+  passwordVersion Int       @default(0)
+  role         String
+  isActive     Boolean   @default(true)
+  baps         Bap[]     @relation("BapCreator")
+  invoices     Invoice[] @relation("InvoiceCreator")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([workspaceId])
+}
+
+model Store {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  code         String
+  name         String
+  storeType    String
+  address      String?
+  ownerName    String?
+  ownerCompany String?
+  isActive     Boolean   @default(true)
+  baps         Bap[]
+  invoices     Invoice[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([workspaceId, code])
+  @@index([workspaceId, name])
+}
+
+model Bap {
+  id          String       @id @default(cuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  number      String
+  storeId     String
+  store       Store        @relation(fields: [storeId], references: [id])
+  date        DateTime
+  title       String
+  description String?
+  status      String       @default("draft")
+  totalAmount Int          @default(0)
+  amountWords String?
+  createdById String
+  createdBy   User         @relation("BapCreator", fields: [createdById], references: [id])
+  items       BapItem[]
+  invoices    Invoice[]
+  invoiceBaps InvoiceBap[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([workspaceId, number])
+  @@index([workspaceId, status, date])
+}
+
+model BapItem {
+  id          String   @id @default(cuid())
+  bapId       String
+  bap         Bap      @relation(fields: [bapId], references: [id], onDelete: Cascade)
+  serviceName String
+  unit        Int
+  unitPrice   Int
+  subtotal    Int
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([bapId, sortOrder])
+}
+
+model Invoice {
+  id          String       @id @default(cuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  number      String
+  date        DateTime
+  storeId     String
+  store       Store        @relation(fields: [storeId], references: [id])
+  bapId       String?
+  bap         Bap?         @relation(fields: [bapId], references: [id])
+  invoiceBaps InvoiceBap[]
+  purpose     String?
+  status      String       @default("draft")
+  totalAmount Int          @default(0)
+  amountWords String?
+  createdById String
+  createdBy   User         @relation("InvoiceCreator", fields: [createdById], references: [id])
+  documents   Document[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([workspaceId, number])
+  @@index([workspaceId, status, date])
+}
+
+model InvoiceBap {
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  bapId     String
+  bap       Bap      @relation(fields: [bapId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+
+  @@id([invoiceId, bapId])
+  @@index([bapId])
+}
+
+model Document {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  type        String
+  entityType  String
+  entityId    String
+  fileName    String
+  storageKey  String
+  mimeType    String
+  fileSize    Int
+  checksum    String?
+  invoiceId   String?
+  invoice     Invoice?  @relation(fields: [invoiceId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, entityType, entityId])
+}
+
+model DeveloperLog {
+  id            String     @id @default(cuid())
+  workspaceId   String?
+  workspace     Workspace? @relation(fields: [workspaceId], references: [id])
+  eventId       String     @unique
+  source        String
+  severity      String
+  status        String     @default("new")
+  fingerprint   String
+  message       String
+  stack         String?
+  requestId     String?
+  requestMethod String?
+  requestPath   String?
+  pageUrl       String?
+  metadataJson  String?
+  occurredAt    DateTime
+  receivedAt    DateTime   @default(now())
+
+  @@index([workspaceId, status, receivedAt])
+  @@index([fingerprint, receivedAt])
+}
+
+model ApiRequestLog {
+  id          String    @id @default(cuid())
+  requestId   String    @unique @db.VarChar(128)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  method      String    @db.VarChar(10)
+  path        String    @db.VarChar(512)
+  statusCode  Int
+  isSuccess   Boolean
+  durationMs  Int
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, isSuccess, createdAt])
+  @@index([requestId])
+}
