@@ -42,6 +42,16 @@ app.use(
   }),
 )
 
+app.get('/', (_request, response) => {
+  response.json({
+    data: {
+      service: 'bst-invoice-api',
+      status: 'ok',
+      health: '/api/health',
+    },
+  })
+})
+
 app.get('/api/health', (_request, response) => {
   response.json({ data: { status: 'ok', service: 'bst-invoice-api', version: config.APP_VERSION } })
 })
