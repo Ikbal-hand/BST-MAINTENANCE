@@ -1,5 +1,5 @@
 export const appConfig = {
-  apiUrl: import.meta.env.VITE_API_URL ?? '',
+  apiUrl: (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, ''),
   appDomain: import.meta.env.VITE_APP_DOMAIN ?? 'bst-maintenance.local',
   branchDomain: import.meta.env.VITE_BRANCH_DOMAIN ?? 'bst-maintenance.local',
   appVersion: import.meta.env.VITE_APP_VERSION ?? '0.1.0',
