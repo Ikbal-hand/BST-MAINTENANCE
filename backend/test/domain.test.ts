@@ -4,15 +4,19 @@ import { canAccessWorkspace, resolveWorkspace } from '../src/domain.js'
 
 const originalAppDomain = process.env.APP_DOMAIN
 const originalBranchDomain = process.env.BRANCH_DOMAIN
+const originalApiHost = process.env.API_HOST
 before(() => {
   process.env.APP_DOMAIN = 'bst-maintenance.com'
   process.env.BRANCH_DOMAIN = 'bst-finance.com'
+  process.env.API_HOST = 'bst-maintenance.herokuapp.com'
 })
 after(() => {
   if (originalAppDomain === undefined) delete process.env.APP_DOMAIN
   else process.env.APP_DOMAIN = originalAppDomain
   if (originalBranchDomain === undefined) delete process.env.BRANCH_DOMAIN
   else process.env.BRANCH_DOMAIN = originalBranchDomain
+  if (originalApiHost === undefined) delete process.env.API_HOST
+  else process.env.API_HOST = originalApiHost
 })
 
 test('resolves the root domain and its reserved central hosts to the developer workspace', () => {
@@ -24,6 +28,15 @@ test('resolves the root domain and its reserved central hosts to the developer w
       domain: 'bst-maintenance.com',
     })
   }
+})
+
+test('resolves the configured API host to the developer workspace', () => {
+  assert.deepEqual(resolveWorkspace('BST-MAINTENANCE.HEROKUAPP.COM'), {
+    host: 'bst-maintenance.herokuapp.com',
+    type: 'central',
+    slug: 'central',
+    domain: 'bst-maintenance.com',
+  })
 })
 
 test('resolves a single subdomain on the separate branch domain', () => {

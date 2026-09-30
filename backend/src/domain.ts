@@ -19,12 +19,13 @@ export function resolveWorkspace(hostHeader: string | undefined): WorkspaceConte
   const host = (hostHeader ?? '').split(':')[0].toLowerCase()
   const domain = process.env.APP_DOMAIN ?? defaultDomain
   const branchDomain = process.env.BRANCH_DOMAIN ?? domain
+  const apiHost = process.env.API_HOST?.toLowerCase()
 
   if (!host || host === 'localhost' || host === '127.0.0.1') {
     return { host, type: 'unknown', slug: null, domain }
   }
 
-  if (host === domain || host === `www.${domain}` || host === `central.${domain}`) {
+  if (host === domain || host === `www.${domain}` || host === `central.${domain}` || host === apiHost) {
     return { host, type: 'central', slug: 'central', domain }
   }
 

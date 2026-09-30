@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   APP_DOMAIN: z.string().min(1).default('bst-maintenance.local'),
   BRANCH_DOMAIN: z.string().min(1).optional(),
+  API_HOST: z.string().min(1).optional(),
   DATABASE_URL: z.string().min(1).default('mysql://bst_user:change-me@127.0.0.1:3306/bst_invoice'),
   JWT_SECRET: z.string().min(32).default('development-only-change-this-secret-32'),
   JWT_EXPIRES_IN: z.string().min(1).default('8h'),
