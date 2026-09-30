@@ -520,25 +520,44 @@ export function InvoicesPage() {
                 {availableBaps.data?.length === 0 && (
                   <p className="panel-message">Tidak ada BAP pada tanggal dan toko ini.</p>
                 )}
-                {availableBaps.data?.map((bap) => (
-                  <label className="bap-choice" key={bap.id}>
-                    <input
-                      type="checkbox"
-                      checked={selectedBapIds.includes(bap.id)}
-                      onChange={(event) =>
-                        setSelectedBapIds(
-                          event.target.checked
-                            ? [...selectedBapIds, bap.id]
-                            : selectedBapIds.filter((id) => id !== bap.id),
-                        )
-                      }
-                    />
-                    <span>
-                      <b>{bap.number}</b> · {bap.title}
-                      <small>{currency.format(bap.totalAmount)}</small>
-                    </span>
-                  </label>
-                ))}
+                {!!availableBaps.data?.length && (
+                  <div className="available-baps-table-wrap">
+                    <table className="available-baps-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Nomor BAP &amp; uraian</th>
+                          <th scope="col">Total</th>
+                          <th scope="col">Pilih</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {availableBaps.data.map((bap) => (
+                          <tr key={bap.id}>
+                            <td>
+                              <strong>{bap.number}</strong>
+                              <span>{bap.title}</span>
+                            </td>
+                            <td>{currency.format(bap.totalAmount)}</td>
+                            <td>
+                              <input
+                                type="checkbox"
+                                aria-label={`Pilih BAP ${bap.number}`}
+                                checked={selectedBapIds.includes(bap.id)}
+                                onChange={(event) =>
+                                  setSelectedBapIds(
+                                    event.target.checked
+                                      ? [...selectedBapIds, bap.id]
+                                      : selectedBapIds.filter((id) => id !== bap.id),
+                                  )
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
               <label>
                 Untuk pembayaran
