@@ -5,7 +5,6 @@ import { useEffect } from 'react'
 import { getCurrentUser } from '../features/auth/auth-api'
 import { useAuthStore } from '../stores/auth-store'
 import { getSettings } from '../features/settings/settings-api'
-import { installGlobalErrorReporting } from '../lib/developer-error-reporter'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,8 +18,6 @@ const queryClient = new QueryClient({
 export function App() {
   const setUser = useAuthStore((state) => state.setUser)
   const authStatus = useAuthStore((state) => state.status)
-
-  useEffect(() => installGlobalErrorReporting(), [])
 
   useEffect(() => {
     let active = true

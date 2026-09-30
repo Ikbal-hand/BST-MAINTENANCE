@@ -14,7 +14,6 @@ const envSchema = z.object({
   JWT_REMEMBER_EXPIRES_IN: z.string().min(1).default('30d'),
   REMEMBER_ME_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(2_592_000),
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
-  DEVELOPER_LOG_TOKEN: z.string().min(16).default('development-developer-log-token'),
   APP_VERSION: z.string().default('0.1.0'),
 })
 

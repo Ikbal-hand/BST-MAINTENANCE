@@ -50,7 +50,3 @@ export function canAccessWorkspace(context: WorkspaceContext, identity: Workspac
 
   return context.host === 'localhost' || context.host === '127.0.0.1'
 }
-
-export function isSuccessfulApiStatus(statusCode: number): boolean {
-  return statusCode >= 200 && statusCode < 300
-}

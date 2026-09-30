@@ -10,8 +10,6 @@ import { requestContext } from './middleware/request-context.js'
 import { accessLog } from './middleware/access-log.js'
 import { notFound } from './middleware/not-found.js'
 import { logger } from './logger.js'
-import { prisma } from './db.js'
-import { createApiRequestLog } from './middleware/api-request-log.js'
 
 const app = express()
 
@@ -24,7 +22,6 @@ app.use(
   }),
 )
 app.use(requestContext)
-app.use(createApiRequestLog(prisma))
 app.use(accessLog)
 app.use(express.json({ limit: '1mb' }))
 app.use(

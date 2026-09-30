@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
-import { canAccessWorkspace, isSuccessfulApiStatus, resolveWorkspace } from '../src/domain.js'
+import { canAccessWorkspace, resolveWorkspace } from '../src/domain.js'
 
 const originalAppDomain = process.env.APP_DOMAIN
 const originalBranchDomain = process.env.BRANCH_DOMAIN
@@ -52,13 +52,4 @@ test('keeps local development hosts available without allowing unknown public ho
   assert.equal(canAccessWorkspace(resolveWorkspace('localhost'), { slug: 'bandung', type: 'branch', role: 'branch_admin' }), true)
   assert.equal(canAccessWorkspace(resolveWorkspace('127.0.0.1'), { slug: 'central', type: 'central', role: 'developer' }), true)
   assert.equal(canAccessWorkspace(resolveWorkspace('unknown.example.com'), { slug: 'central', type: 'central', role: 'developer' }), false)
-})
-
-test('classifies only HTTP 2xx responses as successful API requests', () => {
-  assert.equal(isSuccessfulApiStatus(200), true)
-  assert.equal(isSuccessfulApiStatus(204), true)
-  assert.equal(isSuccessfulApiStatus(299), true)
-  assert.equal(isSuccessfulApiStatus(300), false)
-  assert.equal(isSuccessfulApiStatus(400), false)
-  assert.equal(isSuccessfulApiStatus(500), false)
 })

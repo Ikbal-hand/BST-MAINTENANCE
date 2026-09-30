@@ -101,7 +101,6 @@ Dokumen ini mencatat kemajuan pembangunan aplikasi web pengganti AppSheet.
   - Detail BAP
   - Invoice
   - Dokumen
-  - Developer Log
 - [x] Index dan unique constraint awal ditambahkan.
 - [x] Script database tersedia:
   - `db:generate`
@@ -124,19 +123,9 @@ Dokumen ini mencatat kemajuan pembangunan aplikasi web pengganti AppSheet.
 - [x] Konfigurasi rahasia dipisahkan ke `.env`.
 - [x] Endpoint protected mengembalikan `401` tanpa token.
 
-### Developer Log
-
-- [x] Schema `DeveloperLog` tersedia.
-- [x] Endpoint `POST /api/developer-logs` tersedia.
-- [x] Endpoint menggunakan token service melalui header.
-- [x] Payload divalidasi.
-- [x] Event diterima dengan response `202`.
-- [x] Error dari cabang dapat memiliki event ID, severity, fingerprint, stack, request ID, URL, dan metadata.
-
 ### Dokumentasi
 
 - [x] Rencana pembangunan aplikasi tersedia di [docs/APPLICATION-BUILD-PLAN.md](./docs/APPLICATION-BUILD-PLAN.md).
-- [x] Rencana Developer Log tersedia di [docs/DEVELOPER-LOG-PLAN.md](./docs/DEVELOPER-LOG-PLAN.md).
 - [x] Referensi PDF hasil akhir tersedia di [docs_reference](./docs_reference).
 - [x] README setup dan arsitektur diperbarui.
 
@@ -151,7 +140,6 @@ Dokumen ini mencatat kemajuan pembangunan aplikasi web pengganti AppSheet.
 - [x] Endpoint context berhasil diuji untuk domain branch.
 - [x] Endpoint 404 mengembalikan response terstruktur.
 - [x] Endpoint protected menolak request tanpa autentikasi.
-- [x] Developer Log menolak token salah dan menerima token valid.
 
 ## Keputusan teknis
 
@@ -232,8 +220,6 @@ Dokumen ini mencatat kemajuan pembangunan aplikasi web pengganti AppSheet.
 
 - [ ] Dashboard central.
 - [ ] Dashboard branch.
-- [ ] Daftar Developer Log.
-- [ ] Detail dan status Developer Log.
 - [ ] Filter berdasarkan cabang, severity, status, dan waktu.
 - [ ] Audit Log.
 

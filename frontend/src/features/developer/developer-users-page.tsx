@@ -15,7 +15,7 @@ import {
   setDeveloperBranchUserActive,
   type BranchCreateInput,
   type DeveloperBranchUser,
-} from './developer-report-api'
+} from './developer-user-api'
 import './developer-users-page.css'
 
 type RevealedCredential = {

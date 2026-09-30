@@ -8,9 +8,6 @@ import { InvoicesPage } from '../features/invoices/invoices-page'
 import { AppLayout } from './app-layout'
 import { RecapsPage } from '../features/recaps/recaps-page'
 import { SettingsPage } from '../features/settings/settings-page'
-import { DeveloperModulePage } from '../features/developer/developer-module-page'
-import { ApiRequestReportPage } from '../features/developer/api-request-report-page'
-import { ErrorReportPage } from '../features/developer/error-report-page'
 import { DeveloperUsersPage } from '../features/developer/developer-users-page'
 import { DocumentTitleLayout } from './document-title-layout'
 
@@ -39,13 +36,12 @@ export const router = createBrowserRouter([
             {
               element: <DeveloperWorkspaceRoute />,
               children: [
-                { path: '/app/developer/api-requests', element: <ApiRequestReportPage /> },
-                { path: '/app/developer/errors', element: <ErrorReportPage /> },
+                { path: '/app/developer/api-requests', element: <Navigate to="/app/developer/users" replace /> },
+                { path: '/app/developer/errors', element: <Navigate to="/app/developer/users" replace /> },
                 { path: '/app/developer/users', element: <DeveloperUsersPage /> },
                 { path: '/app/developer/login-users', element: <Navigate to="/app/developer/users" replace /> },
                 { path: '/app/developer/branch-override', element: <Navigate to="/app/developer/users" replace /> },
                 { path: '/app/developer/new-branch', element: <Navigate to="/app/developer/users" replace /> },
-                { path: '/app/developer/:module', element: <DeveloperModulePage /> },
               ],
             },
           ],

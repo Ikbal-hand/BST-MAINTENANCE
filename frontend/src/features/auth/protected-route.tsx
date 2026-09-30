@@ -33,6 +33,6 @@ export function DeveloperWorkspaceRoute() {
 export function WorkspaceHomeRoute() {
   const user = useAuthStore((state) => state.user)
   return user?.role === 'developer'
-    ? <Navigate to="/app/developer/api-requests" replace />
+    ? <Navigate to="/app/developer/users" replace />
     : <DashboardPage />
 }

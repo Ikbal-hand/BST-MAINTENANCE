@@ -58,9 +58,8 @@ subdomains. Central users monitor and configure the organization; branch users
 work only with their branch's stores and transactions.
 
 Users work with operational records, generated or uploaded PDFs, spreadsheet
-imports, search and export, audit history, and a Developer Log for branch
-errors. The existing reference documents and source spreadsheet are part of the
-working context.
+imports, search and export, and audit history. The existing reference documents
+and source spreadsheet are part of the working context.
 
 ## Capabilities and Constraints
 
@@ -73,7 +72,7 @@ Confirmed capabilities and planned scope include:
   terima workflows;
 - PDF generation, upload, archive, download, search, and export;
 - operational and central dashboards;
-- Developer Log and audit log;
+- audit log;
 - configurable document formats, company details, bank accounts, signatures,
   and document numbering.
 
@@ -94,7 +93,7 @@ remain undecided.
 
 The product name is BST Invoice. Existing product copy is primarily Indonesian,
 with concise operational labels and some established English technical or
-workspace terminology such as “Workspace”, “Developer Log”, and “Secure
+workspace terminology such as “Workspace” and “Secure
 workspace for better work.”
 
 The existing BST mark and document references are confirmed project assets.

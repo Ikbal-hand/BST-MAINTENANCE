@@ -1,5 +1,7 @@
 # Rencana Pembangunan Aplikasi BST Maintenance
 
+> Catatan: dokumen ini merupakan rencana historis. Fitur Developer Log dan report request/error tidak termasuk fitur aktif aplikasi.
+
 ## 1. Ringkasan
 
 Aplikasi ini menggantikan alur AppSheet untuk perusahaan maintenance yang menangani pekerjaan, invoice, SPH, BAP, kwitansi, dan rekap tagihan untuk banyak toko Alfamart.

@@ -10,7 +10,6 @@ import { UserRepository } from './repositories/user-repository.js'
 import { StoreRepository } from './repositories/store-repository.js'
 import { BapRepository } from './repositories/bap-repository.js'
 import { prisma } from './db.js'
-import { createDeveloperLog, createFrontendDeveloperLog } from './controllers/developer-log-controller.js'
 import { createInvoiceController } from './controllers/invoice-controller.js'
 import { InvoiceService } from './services/invoice-service.js'
 import { InvoiceRepository } from './repositories/invoice-repository.js'
@@ -25,10 +24,6 @@ import { DashboardService } from './services/dashboard-service.js'
 import { createDashboardController } from './controllers/dashboard-controller.js'
 import { createWorkspaceController } from './controllers/workspace-controller.js'
 import { WorkspaceRepository } from './repositories/workspace-repository.js'
-import { createDeveloperReportController } from './controllers/developer-report-controller.js'
-import { DeveloperReportRepository } from './repositories/developer-report-repository.js'
-import { DeveloperReportService } from './services/developer-report-service.js'
-import { DeveloperLogRepository } from './repositories/developer-log-repository.js'
 import rateLimit from 'express-rate-limit'
 import { createDeveloperUserController } from './controllers/developer-user-controller.js'
 import { DeveloperUserService } from './services/developer-user-service.js'
@@ -43,12 +38,6 @@ export function createRoutes() {
   const settingsController = createSettingsController(new SettingsService(new SettingsRepository(prisma)))
   const dashboardController = createDashboardController(new DashboardService(new DashboardRepository(prisma)))
   const workspaceController = createWorkspaceController(new WorkspaceRepository(prisma))
-  const developerReportController = createDeveloperReportController(
-    new DeveloperReportService(
-      new DeveloperReportRepository(prisma),
-      new DeveloperLogRepository(prisma),
-    ),
-  )
   const developerUserController = createDeveloperUserController(
     new DeveloperUserService(new UserRepository(prisma)),
   )
@@ -68,27 +57,6 @@ export function createRoutes() {
       legacyHeaders: false,
     }),
     authController.changePassword,
-  )
-  router.get(
-    '/developer/reports/api-requests',
-    authenticate,
-    requireWorkspaceAccess,
-    requireRoles('developer'),
-    developerReportController.apiRequests,
-  )
-  router.get(
-    '/developer/reports/errors',
-    authenticate,
-    requireWorkspaceAccess,
-    requireRoles('developer'),
-    developerReportController.errors,
-  )
-  router.patch(
-    '/developer/reports/errors/:id',
-    authenticate,
-    requireWorkspaceAccess,
-    requireRoles('developer'),
-    developerReportController.updateErrorStatus,
   )
   router.get(
     '/developer/users',
@@ -161,17 +129,5 @@ export function createRoutes() {
   router.get('/dashboard/summary', authenticate, requireBranchWorkspace, dashboardController.summary)
   router.get('/settings', authenticate, requireBranchWorkspace, settingsController.get)
   router.patch('/settings', authenticate, requireBranchWorkspace, settingsController.update)
-  router.post(
-    '/developer-logs/client',
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 30,
-      standardHeaders: 'draft-8',
-      legacyHeaders: false,
-    }),
-    createFrontendDeveloperLog,
-  )
-  router.post('/developer-logs', createDeveloperLog)
-
   return router
 }

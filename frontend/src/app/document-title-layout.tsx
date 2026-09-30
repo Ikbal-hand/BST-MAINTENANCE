@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import { Outlet, useMatches } from 'react-router-dom'
 
 const developerTitles: Record<string, string> = {
-  'api-requests': 'API Request Report',
-  errors: 'Error Report',
   users: 'Manajemen User & Cabang',
   'login-users': 'Manajemen User & Cabang',
   'branch-override': 'Manajemen User & Cabang',

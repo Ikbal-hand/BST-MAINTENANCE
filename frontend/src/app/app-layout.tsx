@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { BarChart3, Building2, FileText, LayoutDashboard, LogOut, Menu, Network, Receipt, Settings, Store, TriangleAlert, UsersRound, X, type LucideIcon } from 'lucide-react'
+import { BarChart3, Building2, FileText, LayoutDashboard, LogOut, Menu, Receipt, Settings, Store, UsersRound, X, type LucideIcon } from 'lucide-react'
 import { logout } from '../features/auth/auth-api'
 import { useAuthStore } from '../stores/auth-store'
 import { EventPopup, type EventPopupType } from '../components/ui/event-popup'
@@ -17,8 +17,6 @@ const navigation: NavigationItem[] = [
 ]
 
 const developerNavigation: NavigationItem[] = [
-  { label: 'API Request Report', path: '/app/developer/api-requests', icon: Network },
-  { label: 'Error Report', path: '/app/developer/errors', icon: TriangleAlert },
   { label: 'Manajemen User & Cabang', path: '/app/developer/users', icon: UsersRound },
 ]
 

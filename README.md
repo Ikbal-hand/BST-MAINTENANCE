@@ -1,7 +1,7 @@
 # BST Invoice Apps
 
 Aplikasi web untuk perusahaan maintenance yang mengelola data toko, BAP,
-detail pekerjaan, invoice, SPH, kwitansi, rekap, dan pemantauan error cabang.
+detail pekerjaan, invoice, SPH, kwitansi, dan rekap.
 
 ## Status saat ini
 
@@ -15,7 +15,6 @@ Fondasi aplikasi sudah siap dijalankan:
 - seed workspace, user, dan sample store;
 - REST API dengan validasi Zod;
 - rate limiting, CORS, Helmet, request ID, structured logging;
-- Developer Log untuk menerima error dari cabang;
 - Tailwind CSS, React Router, TanStack Query, dan Zustand.
 
 Dashboard operasional sudah menampilkan ringkasan bulan berjalan: total toko,
@@ -46,7 +45,7 @@ mysql --version
 BST_invoice_apps/
 ├── frontend/       # React, Vite, TypeScript, Tailwind
 ├── backend/        # Express, TypeScript, Prisma
-├── docs/           # Rencana pembangunan dan Developer Log
+├── docs/           # Rencana pembangunan
 ├── docs_reference/ # PDF hasil akhir sebagai acuan
 ├── STORE (1).xlsx  # Data sumber awal
 └── Progres.md      # Catatan kemajuan pengembangan
@@ -110,12 +109,10 @@ APP_DOMAIN=bst-maintenance.local
 BRANCH_DOMAIN=bst-maintenance.local
 DATABASE_URL="mysql://bst_user:password@127.0.0.1:3306/bst_invoice"
 CENTRAL_URL=http://central.bst-maintenance.local:3000
-DEVELOPER_LOG_ENABLED=true
 APP_VERSION=0.1.0
 JWT_SECRET=ganti-dengan-secret-minimal-32-karakter
 JWT_EXPIRES_IN=8h
 CORS_ORIGINS=http://localhost:5173,http://central.bst-maintenance.local:5173,http://bandung.bst-maintenance.local:5173
-DEVELOPER_LOG_TOKEN=ganti-dengan-token-private
 SEED_PASSWORD=ganti-dengan-password-development
 ```
 
@@ -123,7 +120,6 @@ Catatan:
 
 - `DATABASE_URL` harus menunjuk ke database MySQL yang bisa diakses.
 - `JWT_SECRET` minimal 32 karakter.
-- `DEVELOPER_LOG_TOKEN` hanya untuk komunikasi service, jangan dikirim ke frontend.
 - `SEED_PASSWORD` dipakai oleh script seed untuk semua akun seed.
 - Jangan commit file `.env`.
 
@@ -296,8 +292,8 @@ http://bandung.bst-maintenance.local:5173
   `VITE_BRANCH_DOMAIN` beserta seluruh subdomain-nya, sehingga workspace baru
   seperti `cianjur.bst-maintenance.local` tidak perlu ditambahkan satu per satu
   di `vite.config.ts`. Setelah mengubah konfigurasi domain, restart Vite.
-- Sidebar developer menampilkan API Request Report, Error Report, dan Manajemen
-  User & Cabang. Halaman ini menampilkan email login, nama user, status, dan
+- Sidebar developer menampilkan Manajemen User & Cabang. Halaman ini
+  menampilkan email login, nama user, status, dan
   cabang workspace yang menjadi tanggung jawabnya. Aksi per user dapat
   memindahkan user ke cabang aktif lain (override user), mereset password, serta
   menonaktifkan atau mengaktifkan akun. Akun tidak dihapus permanen agar riwayat
@@ -312,15 +308,6 @@ http://bandung.bst-maintenance.local:5173
   kembali. Migration `branch_contact_phone` dan `password_version` menambahkan
   data kontak cabang dan kontrol pencabutan sesi; jalankan
   `npm run db:deploy --prefix backend` setelah mengambil perubahan.
-  API Request Report menghitung request berhasil (status HTTP 2xx) dan gagal
-  (status selain 2xx) per cabang untuk 7, 30, atau 90 hari.
-  Log request menggunakan migration `api_request_logs`; terapkan migration
-  sebelum menggunakan report dengan `npm run db:deploy --prefix backend`.
-  Error Report menerima error JavaScript yang tidak tertangani, kegagalan
-  request API (selain 401), dan exception server 5xx dari cabang. Laporan
-  dilengkapi cabang, waktu, pesan, request ID, rute/halaman, stack dan metadata
-  yang tersedia; developer bisa menandai laporan baru, sedang ditangani, atau
-  selesai. Endpoint intake frontend dibatasi 30 event per 15 menit per IP.
 - Backend mencocokkan hostname saat login dan pada setiap permintaan sesi.
   Akun cabang hanya dapat masuk di subdomain cabangnya, sedangkan akun developer
   masuk melalui domain utama. Host yang tidak cocok dengan workspace ditolak.
@@ -394,7 +381,6 @@ GET  /api/health
 GET  /api/ready
 GET  /api/context
 POST /api/auth/login
-POST /api/developer-logs
 ```
 
 ### Authenticated
@@ -495,31 +481,6 @@ Local:
 
 Backend menentukan workspace dari hostname. Data transaksi menggunakan
 `workspace_id` sehingga data antar cabang tidak boleh tercampur.
-
-## Developer Log
-
-Cabang dapat mengirim error ke central melalui:
-
-```text
-POST /api/developer-logs
-Header: x-developer-log-token: <DEVELOPER_LOG_TOKEN>
-```
-
-Payload minimal:
-
-```json
-{
-  "eventId": "event-unique-id",
-  "source": "frontend",
-  "severity": "error",
-  "fingerprint": "error-fingerprint",
-  "message": "Pesan error",
-  "occurredAt": "2026-09-29T15:00:00.000Z"
-}
-```
-
-Endpoint mengembalikan `202 Accepted` jika event diterima. Rencana lengkap ada
-di [docs/DEVELOPER-LOG-PLAN.md](./docs/DEVELOPER-LOG-PLAN.md).
 
 ## Perintah development
 
