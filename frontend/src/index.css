@@ -484,6 +484,7 @@ body { background: #f8faf7; }
   body:has(> .invoice-preview-backdrop) > #root { display: none; }
   .invoice-preview-backdrop { page: invoice-document; }
   .invoice-print { width: 210mm; min-height: 297mm; margin: 0; padding: 17mm 16mm; overflow: visible; }
+  .invoice-summary { break-inside: avoid; page-break-inside: avoid; }
   .receipt-print { width: 210mm; min-height: 263mm; margin-left: -16mm; padding: 18mm 8mm; }
   .receipt-ticket { width: 194mm; }
   .receipt-field, .receipt-cash, .receipt-signature-block, .receipt-signature, .receipt-signer { print-color-adjust: exact; -webkit-print-color-adjust: exact; }

@@ -110,31 +110,33 @@ function InvoicePrint({
           </tbody>
         </table>
       ))}
-      <div className="invoice-grand-total">
-        <strong>TOTAL KESELURUHAN :</strong>
-        <strong>{currency.format(invoice.totalAmount)}</strong>
-      </div>
-      <footer className="invoice-print-footer">
-        <div>
-          <strong>
-            <u>Note :</u>
-          </strong>
-          <p>Silahkan transfer ke rekening:</p>
-          <strong>
-            {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})
-            <br />
-            a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
-          </strong>
+      <div className="invoice-summary">
+        <div className="invoice-grand-total">
+          <strong>TOTAL KESELURUHAN :</strong>
+          <strong>{currency.format(invoice.totalAmount)}</strong>
         </div>
-        <div className="invoice-signature">
-          <p>Hormat Kami,</p>
-          <div className="invoice-signature-mark">
-            {settings?.signatureDataUrl && <img src={settings.signatureDataUrl} alt="Tanda tangan admin" />}
-            <strong>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
+        <footer className="invoice-print-footer">
+          <div>
+            <strong>
+              <u>Note :</u>
+            </strong>
+            <p>Silahkan transfer ke rekening:</p>
+            <strong>
+              {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})
+              <br />
+              a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
+            </strong>
           </div>
-          <span>(Service Admin)</span>
-        </div>
-      </footer>
+          <div className="invoice-signature">
+            <p>Hormat Kami,</p>
+            <div className="invoice-signature-mark">
+              {settings?.signatureDataUrl && <img src={settings.signatureDataUrl} alt="Tanda tangan admin" />}
+              <strong>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
+            </div>
+            <span>(Service Admin)</span>
+          </div>
+        </footer>
+      </div>
       {documentType === 'invoice' && (
         <section className="receipt-print">
           <h2>KWITANSI</h2>
