@@ -174,7 +174,7 @@ test('opens a branch with a hashed initial admin password and normalized email',
   assert.equal(await bcrypt.compare(result.newPassword, createdInput?.passwordHash ?? ''), true)
 })
 
-test('reports branch slug or admin email collisions clearly', async () => {
+test('reports branch slug or domain collisions clearly', async () => {
   const users = makeUsers({
     createBranchWithAdmin: async () => {
       throw { code: 'P2002' }
@@ -189,6 +189,6 @@ test('reports branch slug or admin email collisions clearly', async () => {
       adminName: 'Admin Jakarta',
       adminEmail: 'admin@example.test',
     }),
-    (error) => error instanceof ConflictError && error.message === 'Slug cabang atau email admin sudah digunakan',
+    (error) => error instanceof ConflictError && error.message === 'Slug atau domain cabang sudah digunakan',
   )
 })

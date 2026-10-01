@@ -24,6 +24,31 @@ const testUser = {
   },
 }
 
+test('looks up a repeated email in the current branch workspace during login', async () => {
+  let queriedEmail = ''
+  let queriedWorkspaceSlug: string | undefined
+  const users: Pick<UserRepository, 'findByEmail' | 'findById' | 'changePassword'> = {
+    findByEmail: async (email, workspaceSlug) => {
+      queriedEmail = email
+      queriedWorkspaceSlug = workspaceSlug
+      return testUser
+    },
+    findById: async () => testUser,
+    changePassword: async () => ({ count: 1 }),
+  }
+
+  const result = await new AuthService(users).login(
+    'ADMIN@EXAMPLE.TEST',
+    currentPassword,
+    false,
+    { host: 'bandung.example.test', type: 'branch', slug: 'bandung', domain: 'example.test' },
+  )
+
+  assert.equal(queriedEmail, 'admin@example.test')
+  assert.equal(queriedWorkspaceSlug, 'bandung')
+  assert.equal(result.user.workspace.slug, 'bandung')
+})
+
 test('changes a password after verifying the current password', async () => {
   let storedHash = testUser.passwordHash
   let updateCount = 0

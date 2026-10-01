@@ -89,7 +89,7 @@ export class DeveloperUserService {
       return { workspace, admin, newPassword }
     } catch (error) {
       if (isUniqueConstraintError(error)) {
-        throw new ConflictError('Slug cabang atau email admin sudah digunakan')
+        throw new ConflictError('Slug atau domain cabang sudah digunakan')
       }
       throw error
     }
