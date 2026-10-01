@@ -23,7 +23,7 @@ const importStoreSchema = storeSchema.extend({
 })
 
 const importSchema = z.object({
-  stores: z.array(importStoreSchema).min(1).max(1000),
+  stores: z.array(importStoreSchema).min(1).max(5000),
 })
 
 const idSchema = z.string().min(1)
