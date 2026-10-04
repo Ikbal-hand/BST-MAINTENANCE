@@ -9,7 +9,7 @@ export class AuthService {
   constructor(private readonly users: Pick<UserRepository, 'findByEmail' | 'findById' | 'changePassword'>) {}
 
   async login(email: string, password: string, rememberMe: boolean, workspaceContext: WorkspaceContext) {
-    const user = await this.users.findByEmail(email.toLowerCase())
+    const user = await this.users.findByEmail(email.toLowerCase(), workspaceContext.slug ?? undefined)
     if (!user?.passwordHash || !user.isActive || !user.workspace.isActive) {
       throw new UnauthorizedError('Email atau password salah')
     }

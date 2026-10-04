@@ -50,7 +50,7 @@ model User {
   workspaceId  String
   workspace    Workspace @relation(fields: [workspaceId], references: [id])
   name         String
-  email        String    @unique
+  email        String
   passwordHash String?
   passwordVersion Int       @default(0)
   role         String
@@ -61,6 +61,7 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   @@index([workspaceId])
+  @@unique([workspaceId, email])
 }
 
 model Store {

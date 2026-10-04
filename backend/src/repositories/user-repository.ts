@@ -3,11 +3,17 @@ import type { PrismaClient } from '@prisma/client'
 export class UserRepository {
   constructor(private readonly database: PrismaClient) {}
 
-  findByEmail(email: string) {
-    return this.database.user.findUnique({
-      where: { email },
+  async findByEmail(email: string, workspaceSlug?: string) {
+    const users = await this.database.user.findMany({
+      where: {
+        email,
+        ...(workspaceSlug ? { workspace: { is: { slug: workspaceSlug } } } : {}),
+      },
       include: { workspace: true },
+      take: 2,
     })
+
+    return users.length === 1 ? users[0] : null
   }
 
   findById(id: string) {

@@ -215,6 +215,9 @@ User seed:
 
 Semua user seed memakai nilai `SEED_PASSWORD` dari `backend/.env`.
 Ganti password tersebut sebelum digunakan bersama user lain.
+Email akun boleh digunakan di beberapa workspace/cabang yang berbeda. Saat
+login pada domain cabang, akun dicari di workspace cabang tersebut. Slug dan
+domain workspace tetap harus unik.
 
 Seed juga membuat sample store:
 
