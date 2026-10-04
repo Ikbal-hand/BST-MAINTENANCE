@@ -170,6 +170,10 @@ npm run db:deploy --prefix backend
 ```
 
 Migration yang tersedia ada di `backend/prisma/migrations`.
+Migration `create_spareparts` menambahkan tabel master sparepart yang dipakai
+saat detail pekerjaan BAP disimpan. Pada production, terapkan migration dengan
+`npm run db:deploy --prefix backend` sebelum memakai penyimpanan detail pekerjaan
+BAP; perintah ini membuat tabel baru dan tidak menghapus data aplikasi.
 
 ### Aturan migration
 
