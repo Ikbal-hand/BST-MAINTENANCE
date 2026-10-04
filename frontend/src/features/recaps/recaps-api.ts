@@ -3,7 +3,26 @@ import { apiFetch } from '../../lib/api'
 export interface RecapSummary {
   period: { from: string; to: string }
   summary: { invoiceCount: number; invoiceTotal: number }
-  invoices: Array<{ id: string; number: string; date: string; totalAmount: number; store: { id: string; code: string; name: string; storeType: string } }>
+  invoices: Array<{
+    id: string
+    number: string
+    date: string
+    purpose: string | null
+    totalAmount: number
+    store: { id: string; code: string; name: string; storeType: string }
+    bap: {
+      title: string
+      description: string | null
+      items: Array<{ serviceName: string }>
+    } | null
+    invoiceBaps: Array<{
+      bap: {
+        title: string
+        description: string | null
+        items: Array<{ serviceName: string }>
+      }
+    }>
+  }>
   stores: Array<{
     storeId: string
     code: string

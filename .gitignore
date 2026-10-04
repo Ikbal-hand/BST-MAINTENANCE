@@ -7,4 +7,5 @@ dist/
 /.agents
 /.claude
 /.codex
-/.impeccable/
+/.impeccable
+old_data

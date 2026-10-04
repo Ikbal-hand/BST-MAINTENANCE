@@ -8,6 +8,7 @@ import { InvoicesPage } from '../features/invoices/invoices-page'
 import { AppLayout } from './app-layout'
 import { RecapsPage } from '../features/recaps/recaps-page'
 import { SettingsPage } from '../features/settings/settings-page'
+import SparepartsPage from '../features/spareparts/spareparts-page'
 import { DeveloperUsersPage } from '../features/developer/developer-users-page'
 import { DocumentTitleLayout } from './document-title-layout'
 
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
                 { path: '/app/invoices', element: <InvoicesPage /> },
                 { path: '/app/recaps', element: <RecapsPage /> },
                 { path: '/app/settings', element: <SettingsPage /> },
+                { path: '/app/spareparts', element: <SparepartsPage /> },
               ],
             },
             {

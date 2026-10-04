@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { BarChart3, Building2, FileText, LayoutDashboard, LogOut, Menu, Receipt, Settings, Store, UsersRound, X, type LucideIcon } from 'lucide-react'
+import { BarChart3, Building2, FileText, LayoutDashboard, LogOut, Menu, Receipt, Settings, Store, UsersRound, Wrench, X, type LucideIcon } from 'lucide-react'
 import { logout } from '../features/auth/auth-api'
 import { useAuthStore } from '../stores/auth-store'
 import { EventPopup, type EventPopupType } from '../components/ui/event-popup'
@@ -14,6 +14,7 @@ const navigation: NavigationItem[] = [
   { label: 'BAP', path: '/app/bap', icon: FileText },
   { label: 'Invoice dan SPH', path: '/app/invoices', icon: Receipt },
   { label: 'Rekap', path: '/app/recaps', icon: BarChart3 },
+  { label: 'Sparepart', path: '/app/spareparts', icon: Wrench },
 ]
 
 const developerNavigation: NavigationItem[] = [

@@ -1,8 +1,10 @@
 import { ConflictError, NotFoundError } from '../errors.js'
 import { BapRepository, type BapData } from '../repositories/bap-repository.js'
 
+import { SparepartRepository } from '../repositories/sparepart-repository.js'
+
 export class BapService {
-  constructor(private readonly baps: BapRepository) {}
+  constructor(private readonly baps: BapRepository, private readonly spareparts?: SparepartRepository) {}
 
   async list(workspaceId: string, page: number, limit: number, search?: string, status?: string, storeType?: string) {
     const [items, total] = await this.baps.list(workspaceId, page, limit, search, status, storeType)
@@ -18,8 +20,21 @@ export class BapService {
     return bap
   }
 
+  private async processSpareparts(workspaceId: string, items?: { serviceName: string; unitPrice: number }[]) {
+    if (!this.spareparts || !items) return
+    for (const item of items) {
+      if (item.serviceName && item.serviceName !== 'Transport' && item.serviceName !== 'Jasa Service') {
+        const existing = await this.spareparts.findByName(workspaceId, item.serviceName)
+        if (!existing) {
+          await this.spareparts.create({ workspaceId, name: item.serviceName, price: item.unitPrice })
+        }
+      }
+    }
+  }
+
   async create(workspaceId: string, data: BapData) {
     await this.ensureStore(workspaceId, data.storeId)
+    await this.processSpareparts(workspaceId, data.items)
     try {
       return await this.baps.create(workspaceId, data)
     } catch (error) {
@@ -30,6 +45,7 @@ export class BapService {
 
   async update(workspaceId: string, id: string, data: Parameters<BapRepository['update']>[2]) {
     if (data.storeId) await this.ensureStore(workspaceId, data.storeId)
+    await this.processSpareparts(workspaceId, data.items)
     try {
       const bap = await this.baps.update(workspaceId, id, data)
       if (!bap) throw new NotFoundError('BAP tidak ditemukan')

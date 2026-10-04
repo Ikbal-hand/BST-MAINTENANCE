@@ -27,16 +27,20 @@ import { WorkspaceRepository } from './repositories/workspace-repository.js'
 import rateLimit from 'express-rate-limit'
 import { createDeveloperUserController } from './controllers/developer-user-controller.js'
 import { DeveloperUserService } from './services/developer-user-service.js'
+import { createSparepartController } from './controllers/sparepart-controller.js'
+import { SparepartService } from './services/sparepart-service.js'
+import { SparepartRepository } from './repositories/sparepart-repository.js'
 
 export function createRoutes() {
   const router = Router()
   const authController = createAuthController(new AuthService(new UserRepository(prisma)))
   const storeController = createStoreController(new StoreService(new StoreRepository(prisma)))
-  const bapController = createBapController(new BapService(new BapRepository(prisma)))
+  const bapController = createBapController(new BapService(new BapRepository(prisma), new SparepartRepository(prisma)))
   const invoiceController = createInvoiceController(new InvoiceService(new InvoiceRepository(prisma)))
   const recapController = createRecapController(new RecapService(new RecapRepository(prisma)))
   const settingsController = createSettingsController(new SettingsService(new SettingsRepository(prisma)))
   const dashboardController = createDashboardController(new DashboardService(new DashboardRepository(prisma)))
+  const sparepartController = createSparepartController(new SparepartService(new SparepartRepository(prisma)))
   const workspaceController = createWorkspaceController(new WorkspaceRepository(prisma))
   const developerUserController = createDeveloperUserController(
     new DeveloperUserService(new UserRepository(prisma)),
@@ -107,6 +111,10 @@ export function createRoutes() {
     requireRoles('developer'),
     developerUserController.createBranch,
   )
+  router.get('/spareparts', authenticate, requireBranchWorkspace, sparepartController.list)
+  router.post('/spareparts', authenticate, requireBranchWorkspace, sparepartController.create)
+  router.patch('/spareparts/:id', authenticate, requireBranchWorkspace, sparepartController.update)
+  router.delete('/spareparts/:id', authenticate, requireBranchWorkspace, sparepartController.remove)
   router.get('/stores', authenticate, requireBranchWorkspace, storeController.list)
   router.post('/stores', authenticate, requireBranchWorkspace, storeController.create)
   router.post('/stores/import', authenticate, requireBranchWorkspace, storeController.import)

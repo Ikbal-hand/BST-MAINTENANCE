@@ -6,6 +6,7 @@ const querySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().trim().min(1).max(100).optional(),
+  status: z.enum(['unpaid', 'paid', 'revision']).optional(),
 })
 
 const invoiceSchema = z.object({
@@ -21,6 +22,7 @@ const invoiceUpdateSchema = z.object({
   date: z.coerce.date().optional(),
   purpose: z.string().trim().max(2000).optional(),
   amountWords: z.string().trim().max(255).optional(),
+  status: z.enum(['unpaid', 'paid', 'revision']).optional(),
 })
 
 const availableBapsSchema = z.object({
@@ -38,7 +40,7 @@ export function createInvoiceController(service: InvoiceService) {
   return {
     list: (async (request, response) => {
       const query = querySchema.parse(request.query)
-      const result = await service.list(request.auth!.workspaceId, query.page, query.limit, query.search)
+      const result = await service.list(request.auth!.workspaceId, query.page, query.limit, query.search, query.status)
       response.json({ data: result })
     }) satisfies RequestHandler,
 

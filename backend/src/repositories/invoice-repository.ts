@@ -26,15 +26,19 @@ export type InvoiceCreateData = {
   totalAmount: number
 }
 
-export type InvoiceUpdateData = Partial<Pick<InvoiceCreateData, 'number' | 'date' | 'purpose' | 'amountWords'>>
+export type InvoiceUpdateData = Partial<Pick<InvoiceCreateData, 'number' | 'date' | 'purpose' | 'amountWords'>> & {
+  status?: 'unpaid' | 'paid' | 'revision'
+}
 
 export class InvoiceRepository {
   constructor(private readonly database: PrismaClient) {}
 
-  list(workspaceId: string, page: number, limit: number, search?: string) {
+  list(workspaceId: string, page: number, limit: number, search?: string, status?: 'unpaid' | 'paid' | 'revision') {
     const where: Prisma.InvoiceWhereInput = {
       workspaceId,
-      status: { not: 'deleted' },
+      status: status
+        ? { in: status === 'unpaid' ? ['unpaid', 'draft'] : [status] }
+        : { not: 'deleted' },
       ...(search
         ? {
             OR: [

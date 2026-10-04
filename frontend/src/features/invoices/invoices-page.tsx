@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Eye, MoreVertical, Pencil, Plus, Printer, Trash2, X } from 'lucide-react'
+import { Check, ChevronDown, Eye, MoreVertical, Pencil, Plus, Printer, Trash2, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
-import { useState, type CSSProperties, type FormEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { Button } from '../../components/ui/button'
 import { ComboBox } from '../../components/ui/combo-box'
 import { DataTable, type DataTableColumn } from '../../components/ui/data-table'
 import { DatePicker } from '../../components/ui/date-picker'
 import { EventPopup, type EventPopupType } from '../../components/ui/event-popup'
 import { getSettings, type WorkspaceSettings } from '../settings/settings-api'
-import { getStores } from '../stores/stores-api'
+import { getAllStores } from '../stores/stores-api'
 import { InvoiceDetailPopup } from './invoice-detail-popup'
 import receiptBackground from '../../../../image/background kuetansi.png'
 import {
@@ -18,6 +18,7 @@ import {
   getInvoices,
   updateInvoice,
   type Invoice,
+  type InvoiceStatus,
   type InvoiceUpdateInput,
 } from './invoices-api'
 
@@ -26,61 +27,110 @@ const initialForm = { date: today(), storeId: '', purpose: '', amountWords: '' }
 const currency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 })
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value))
+const invoiceStatuses: Array<{ value: InvoiceStatus; label: string }> = [
+  { value: 'unpaid', label: 'Belum dibayar' },
+  { value: 'paid', label: 'Lunas' },
+  { value: 'revision', label: 'Perlu Revisi' },
+]
 
 function InvoicePrint({
   invoice,
   documentType,
   settings,
+  innerRef,
 }: {
   invoice: Invoice
   documentType: 'invoice' | 'sph'
   settings?: WorkspaceSettings
+  innerRef?: React.RefObject<HTMLDivElement | null>
 }) {
   const baps = (invoice.baps.length ? invoice.baps : invoice.bap ? [invoice.bap] : []).filter(
     (bap): bap is NonNullable<typeof bap> => Boolean(bap),
   )
+
+  // Shared border style used everywhere
+  const border = '1px solid #111'
+
   return (
-    <div className="invoice-print">
-      <header className="invoice-print-header">
-        <div className="invoice-logo">
-          {settings?.logoDataUrl ? <img src={settings.logoDataUrl} alt="Logo aplikasi" /> : <strong>BST</strong>}
-          <span>CV. BERKARYA SATU TUJUAN</span>
-        </div>
-        <h1>{documentType === 'sph' ? 'SPH' : 'INVOICE'}</h1>
-        <div className="invoice-company">
-          <strong>CV. BERKARYA SATU TUJUAN</strong>
-          <span>
-            Kp. Cilamajang, RT/RW. 004/006, Kel. Cipawitra,
-            <br />
-            Kec. Mangkubumi, Kota Tasikmalaya, 46181
-          </span>
-          <span>No Telp. 081214245300</span>
-        </div>
-      </header>
-      <div className="invoice-meta">
-        <div className="invoice-bill-to">
-          <strong>BILL TO</strong>
-          <b>{invoice.store.ownerCompany ?? '—'}</b>
-          <span>
-            TOKO : {invoice.store.name}
-            <br />
-            KODE : {invoice.store.code}
-          </span>
-        </div>
-        <div className="invoice-number">
-          <strong>
-            NO INVOICE
-            <br />
-            {invoice.number}
-          </strong>
-          <span>
-            TANGGAL :
-            <br />
-            {formatDate(invoice.date)}
-          </span>
-        </div>
-      </div>
-      <h2>DETAIL PESANAN</h2>
+    <div className="invoice-print" ref={innerRef}>
+      {/* ── HEADER: logo | judul | alamat perusahaan ── */}
+      <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', marginBottom: '3mm' }}>
+        <tbody>
+          <tr>
+            {/* Logo */}
+            <td style={{ width: '34%', verticalAlign: 'top', textAlign: 'center' }}>
+              {settings?.logoDataUrl
+                ? <img src={settings.logoDataUrl} alt="Logo" style={{ display: 'block', width: '48mm', height: '24mm', objectFit: 'contain', margin: '0 auto' }} />
+                : <strong style={{ color: '#e30613', fontSize: '37pt', fontFamily: 'Arial, sans-serif', letterSpacing: '-7px', lineHeight: '0.8', display: 'block' }}>BST</strong>}
+              <span style={{ display: 'block', marginTop: '5px', fontSize: '8pt', fontWeight: 700, whiteSpace: 'nowrap' }}>CV. BERKARYA SATU TUJUAN</span>
+            </td>
+            {/* Judul */}
+            <td style={{ width: '32%', verticalAlign: 'bottom', textAlign: 'center', paddingBottom: '2mm' }}>
+              <span style={{ fontFamily: 'Arial, sans-serif', fontSize: '21pt', fontWeight: 700, textDecoration: 'underline' }}>
+                {documentType === 'sph' ? 'SPH' : 'INVOICE'}
+              </span>
+            </td>
+            {/* Alamat perusahaan */}
+            <td style={{ width: '34%', verticalAlign: 'top', fontSize: '8pt', lineHeight: '1.3' }}>
+              <strong style={{ display: 'block', fontSize: '9.5pt' }}>CV. BERKARYA SATU TUJUAN</strong>
+              <span style={{ display: 'block', marginTop: '5px' }}>
+                Kp. Cilamajang, RT/RW. 004/006, Kel. Cipawitra,<br />
+                Kec. Mangkubumi, Kota Tasikmalaya, 46181
+              </span>
+              <span style={{ display: 'block', marginTop: '5px' }}>No Telp. 081214245300</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* ── META: Bill To | No Invoice / Tanggal ── */}
+      <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', marginTop: '3mm' }}>
+        <tbody>
+          <tr>
+            {/* Bill To */}
+            <td style={{ width: '49%', height: '32mm', border, verticalAlign: 'top', padding: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '5px', textAlign: 'center', borderBottom: border, fontFamily: 'Arial, sans-serif', fontWeight: 700 }}>BILL TO</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '7px', fontWeight: 700, minHeight: '13mm', display: 'block' }}>{invoice.store.ownerCompany ?? '—'}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '7px', borderTop: border }}>
+                      TOKO : {invoice.store.name}<br />
+                      KODE : {invoice.store.code}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+            {/* Spacer */}
+            <td style={{ width: '2%' }} />
+            {/* No Invoice / Tanggal */}
+            <td style={{ width: '49%', height: '32mm', border, verticalAlign: 'top', padding: 0 }}>
+              <table style={{ width: '100%', height: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                <tbody>
+                  <tr style={{ height: '100%' }}>
+                    <td style={{ width: '50%', padding: '7px', verticalAlign: 'top', fontFamily: 'Arial, sans-serif', fontWeight: 700 }}>
+                      {documentType === 'sph' ? 'NO SPH' : 'NO INVOICE'}<br />
+                      {invoice.number}
+                    </td>
+                    <td style={{ width: '50%', padding: '7px', verticalAlign: 'top', borderLeft: border }}>
+                      TANGGAL :<br />
+                      {formatDate(invoice.date)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 className="invoice-section-title">DETAIL PESANAN</h2>
+
       {baps.map((bap) => (
         <table className="invoice-table" key={bap.id}>
           <thead>
@@ -110,33 +160,39 @@ function InvoicePrint({
           </tbody>
         </table>
       ))}
-      <div className="invoice-summary">
-        <div className="invoice-grand-total">
-          <strong>TOTAL KESELURUHAN :</strong>
-          <strong>{currency.format(invoice.totalAmount)}</strong>
-        </div>
-        <footer className="invoice-print-footer">
-          <div>
-            <strong>
-              <u>Note :</u>
-            </strong>
-            <p>Silahkan transfer ke rekening:</p>
-            <strong>
-              {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})
-              <br />
-              a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
-            </strong>
-          </div>
-          <div className="invoice-signature">
-            <p>Hormat Kami,</p>
-            <div className="invoice-signature-mark">
-              {settings?.signatureDataUrl && <img src={settings.signatureDataUrl} alt="Tanda tangan admin" />}
-              <strong>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
-            </div>
-            <span>(Service Admin)</span>
-          </div>
-        </footer>
+
+      {/* ── GRAND TOTAL ── */}
+      <div className="invoice-grand-total">
+        <strong>TOTAL KESELURUHAN :</strong>
+        <strong>{currency.format(invoice.totalAmount)}</strong>
       </div>
+
+      {/* ── FOOTER: Note + Tanda Tangan ── */}
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '18mm', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+        <tbody>
+          <tr>
+            <td style={{ verticalAlign: 'top', lineHeight: '1.45' }}>
+              <strong><u>Note :</u></strong>
+              <p style={{ margin: '14px 0 12px' }}>Silahkan transfer ke rekening:</p>
+              <strong>
+                {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})<br />
+                a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
+              </strong>
+            </td>
+            <td style={{ verticalAlign: 'top', textAlign: 'center', width: '48mm', lineHeight: '1.45' }}>
+              <p style={{ margin: '0 0 2mm' }}>Hormat Kami,</p>
+              <div style={{ display: 'block', textAlign: 'center' }}>
+                {settings?.signatureDataUrl && (
+                  <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ display: 'block', width: '35mm', height: '18mm', objectFit: 'contain', margin: '0 auto' }} />
+                )}
+                <strong style={{ display: 'block' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
+              </div>
+              <span style={{ fontSize: '10pt' }}>(Service Admin)</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
       {documentType === 'invoice' && (
         <section className="receipt-print">
           <h2>KWITANSI</h2>
@@ -175,29 +231,73 @@ function InvoicePrint({
   )
 }
 
+
 export function InvoicesPage() {
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('')
   const [form, setForm] = useState(initialForm)
   const [createFormOpen, setCreateFormOpen] = useState(false)
   const [selectedBapIds, setSelectedBapIds] = useState<string[]>([])
   const [message, setMessage] = useState('')
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [editing, setEditing] = useState(false)
+  const [statusMenuInvoiceId, setStatusMenuInvoiceId] = useState<string | null>(null)
+  const [statusMenuPosition, setStatusMenuPosition] = useState<CSSProperties | null>(null)
   const [actionInvoiceId, setActionInvoiceId] = useState<string | null>(null)
   const [actionMenuPosition, setActionMenuPosition] = useState<CSSProperties | null>(null)
   const [pendingDeleteInvoice, setPendingDeleteInvoice] = useState<Invoice | null>(null)
   const [popup, setPopup] = useState<{ type: EventPopupType; title: string; description?: string } | null>(null)
   const [printRequest, setPrintRequest] = useState<{ invoice: Invoice; documentType: 'invoice' | 'sph' } | null>(null)
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
+  const printDocumentRef = useRef<HTMLDivElement>(null)
+  const statusMenuTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const statusMenuRef = useRef<HTMLDivElement | null>(null)
 
   const queryClient = useQueryClient()
   const settings = useQuery({ queryKey: ['workspace-settings'], queryFn: getSettings })
-  const invoices = useQuery({ queryKey: ['invoices', search], queryFn: () => getInvoices(search) })
-  const stores = useQuery({ queryKey: ['stores', 'invoice-options'], queryFn: () => getStores('') })
+  const invoices = useQuery({
+    queryKey: ['invoices', search, statusFilter],
+    queryFn: () => getInvoices(search, statusFilter || undefined),
+  })
+  const stores = useQuery({ queryKey: ['stores', 'invoice-options'], queryFn: getAllStores })
   const availableBaps = useQuery({
     queryKey: ['invoice-baps', form.date, form.storeId],
     queryFn: () => getAvailableBaps(form.date, form.storeId),
     enabled: Boolean(form.date && form.storeId),
   })
+
+  const downloadPdf = useCallback(async () => {
+    if (!printRequest) return
+    setIsDownloadingPdf(true)
+    try {
+      const { pdf } = await import('@react-pdf/renderer')
+      const { InvoicePdfDocument } = await import('./invoice-pdf-document')
+
+      const doc = <InvoicePdfDocument invoice={printRequest.invoice} documentType={printRequest.documentType} settings={settings.data} />
+      const blob = await pdf(doc).toBlob()
+
+      const prefix = printRequest.documentType === 'sph' ? 'SPH' : 'Tagihan Invoice'
+      const safeNum = printRequest.invoice.number.replace(/[<>:"/\\|?*]/g, '-')
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${prefix} ${safeNum}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (error) {
+      setPopup({
+        type: 'error',
+        title: 'Gagal mengunduh PDF',
+        description: error instanceof Error ? error.message : 'PDF tidak dapat dibuat.',
+      })
+    } finally {
+      setIsDownloadingPdf(false)
+    }
+  }, [printRequest, settings.data])
+
 
   const createMutation = useMutation({
     mutationFn: createInvoice,
@@ -227,6 +327,42 @@ export function InvoicesPage() {
         description: error instanceof Error ? error.message : 'Silakan coba lagi.',
       }),
   })
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: InvoiceStatus }) => updateInvoice(id, { status }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['invoices'] }),
+    onError: (error) =>
+      setPopup({
+        type: 'error',
+        title: 'Gagal memperbarui status',
+        description: error instanceof Error ? error.message : 'Silakan coba lagi.',
+      }),
+  })
+
+  useEffect(() => {
+    if (!statusMenuInvoiceId) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (statusMenuTriggerRef.current?.contains(target) || statusMenuRef.current?.contains(target)) return
+      setStatusMenuInvoiceId(null)
+      setStatusMenuPosition(null)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setStatusMenuInvoiceId(null)
+      setStatusMenuPosition(null)
+      statusMenuTriggerRef.current?.focus()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [statusMenuInvoiceId])
 
   const deleteMutation = useMutation({
     mutationFn: deleteInvoice,
@@ -266,7 +402,10 @@ export function InvoicesPage() {
 
   const selectedBaps = availableBaps.data?.filter((bap) => selectedBapIds.includes(bap.id)) ?? []
   const total = selectedBaps.reduce((sum, bap) => sum + bap.totalAmount, 0)
-  const storeOptions = stores.data?.items.map((store) => ({ value: store.id, label: store.name, description: `${store.code} · ${store.storeType}` })) ?? []
+  const storeOptions = useMemo(
+    () => stores.data?.map((store) => ({ value: store.id, label: store.name, description: `${store.code} · ${store.storeType}` })) ?? [],
+    [stores.data],
+  )
 
   const invoiceColumns: DataTableColumn<Invoice>[] = [
     {
@@ -300,6 +439,44 @@ export function InvoicesPage() {
       render: (invoice) => currency.format(invoice.totalAmount),
     },
     {
+      key: 'status',
+      header: 'Status invoice',
+      render: (invoice) => (
+        <div className="invoice-status-picker">
+          <button
+            ref={(element) => {
+              if (statusMenuInvoiceId === invoice.id) statusMenuTriggerRef.current = element
+            }}
+            type="button"
+            className={`invoice-status-badge is-${invoice.status}`}
+            aria-label={`Status invoice ${invoice.number}: ${invoiceStatuses.find((option) => option.value === invoice.status)?.label ?? 'Belum dibayar'}`}
+            aria-haspopup="menu"
+            aria-expanded={statusMenuInvoiceId === invoice.id}
+            disabled={statusMutation.isPending}
+            onClick={(event) => {
+              event.stopPropagation()
+              if (statusMenuInvoiceId === invoice.id) {
+                setStatusMenuInvoiceId(null)
+                setStatusMenuPosition(null)
+                return
+              }
+              const rect = event.currentTarget.getBoundingClientRect()
+              const menuHeight = 150
+              setStatusMenuInvoiceId(invoice.id)
+              setStatusMenuPosition({
+                top: rect.bottom + menuHeight > window.innerHeight - 8 ? Math.max(8, rect.top - menuHeight - 6) : rect.bottom + 6,
+                left: Math.max(8, Math.min(window.innerWidth - 190, rect.left)),
+              })
+            }}
+          >
+            <span className="invoice-status-dot" />
+            {invoiceStatuses.find((option) => option.value === invoice.status)?.label ?? 'Belum dibayar'}
+            <ChevronDown size={13} aria-hidden="true" />
+          </button>
+        </div>
+      ),
+    },
+    {
       key: 'actions',
       header: 'Aksi',
       render: (invoice) => (
@@ -318,7 +495,7 @@ export function InvoicesPage() {
                 return
               }
               const rect = event.currentTarget.getBoundingClientRect()
-              const menuHeight = 198
+              const menuHeight = 268
               setActionInvoiceId(invoice.id)
               setActionMenuPosition({
                 top: rect.bottom + 4 > window.innerHeight - 8 ? Math.max(8, rect.top - menuHeight - 4) : rect.bottom + 4,
@@ -350,12 +527,27 @@ export function InvoicesPage() {
           <section className="store-panel">
             <div className="panel-heading">
               <h2>Daftar invoice</h2>
-              <input
-                aria-label="Cari invoice"
-                placeholder="Cari nomor atau toko..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
+              <div className="invoice-list-filters">
+                <input
+                  aria-label="Cari invoice"
+                  placeholder="Cari nomor atau toko..."
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+                <select
+                  aria-label="Filter status invoice"
+                  value={statusFilter}
+                  onChange={(event) => {
+                    const status = invoiceStatuses.find((option) => option.value === event.target.value)?.value
+                    setStatusFilter(status ?? '')
+                  }}
+                >
+                  <option value="">Semua status</option>
+                  {invoiceStatuses.map((status) => (
+                    <option key={status.value} value={status.value}>{status.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             {invoices.isLoading && <p className="panel-message">Memuat invoice...</p>}
             {invoices.isError && (
@@ -382,6 +574,42 @@ export function InvoicesPage() {
               />
             )}
           </section>
+
+          {statusMenuInvoiceId && statusMenuPosition && createPortal(
+            <div
+              ref={statusMenuRef}
+              className="invoice-status-popover"
+              style={statusMenuPosition}
+              role="menu"
+              aria-label={`Pilih status ${invoices.data?.items.find((item) => item.id === statusMenuInvoiceId)?.number ?? 'invoice'}`}
+            >
+              <span className="invoice-status-popover-title">Ubah status</span>
+              {invoiceStatuses.map((status) => {
+                const invoice = invoices.data?.items.find((item) => item.id === statusMenuInvoiceId)
+                return (
+                  <button
+                    key={status.value}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={invoice?.status === status.value}
+                    className={`invoice-status-option is-${status.value}`}
+                    onClick={() => {
+                      setStatusMenuInvoiceId(null)
+                      setStatusMenuPosition(null)
+                      if (invoice && invoice.status !== status.value) {
+                        statusMutation.mutate({ id: invoice.id, status: status.value })
+                      }
+                    }}
+                  >
+                    <span className="invoice-status-dot" />
+                    <span>{status.label}</span>
+                    {invoice?.status === status.value && <Check size={14} aria-hidden="true" />}
+                  </button>
+                )
+              })}
+            </div>,
+            document.body,
+          )}
 
           {actionInvoiceId &&
             actionMenuPosition &&
@@ -425,7 +653,7 @@ export function InvoicesPage() {
                           setActionMenuPosition(null)
                         }}
                       >
-                        <Printer size={15} /> Cetak invoice
+                        <Printer size={15} /> Cetak / Download PDF Invoice
                       </button>
                       <button
                         type="button"
@@ -436,7 +664,7 @@ export function InvoicesPage() {
                           setActionMenuPosition(null)
                         }}
                       >
-                        <Printer size={15} /> Cetak SPH
+                        <Printer size={15} /> Cetak / Download PDF SPH
                       </button>
                       <button type="button" role="menuitem" className="is-danger" onClick={() => requestDelete(invoice)}>
                         <Trash2 size={15} /> Hapus invoice
@@ -595,6 +823,10 @@ export function InvoicesPage() {
             <Button type="button" onClick={() => window.print()}>
               <Printer size={16} /> Cetak {printRequest.documentType === 'sph' ? 'SPH' : 'Invoice'}
             </Button>
+            <Button type="button" onClick={downloadPdf} disabled={isDownloadingPdf} className="invoice-download-button">
+              <Printer size={16} />
+              {isDownloadingPdf ? 'Menyiapkan PDF...' : 'Download PDF'}
+            </Button>
             <button type="button" onClick={() => setPrintRequest(null)}>
               Tutup
             </button>
@@ -603,6 +835,7 @@ export function InvoicesPage() {
             invoice={printRequest.invoice}
             documentType={printRequest.documentType}
             settings={settings.data}
+            innerRef={printDocumentRef}
           />
         </div>,
         document.body,

@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { BarChart3, Check, FileCheck2, Printer, WalletCards } from 'lucide-react'
-import { createPortal } from 'react-dom'
+import { BarChart3, Download, FileCheck2, FileSpreadsheet, WalletCards } from 'lucide-react'
 import { useState } from 'react'
-import { getRecapSummary, type RecapSummary } from './recaps-api'
+import { getRecapSummary } from './recaps-api'
 import { getSettings } from '../settings/settings-api'
 import defaultCompanyLogo from '../../../../image/logo_perusahaan.png'
 
@@ -14,90 +13,12 @@ const monthStart = () => {
 }
 const today = () => new Date().toISOString().slice(0, 10)
 
-function RecapPrintSheet({ data, logo }: { data: RecapSummary; logo: string }) {
-  const storeTypes = new Map(data.invoices.map((invoice) => [invoice.store.id, invoice.store.storeType]))
-
-  return (
-    <section className="recap-print-sheet" aria-hidden="true">
-      <header className="recap-print-header">
-        <div className="recap-print-contact">
-          <p>
-            Perum Marga Mulya Indah
-            <br />
-            Desa Cikunir Kec. Singaparna,
-            <br />
-            Tasikmalaya
-          </p>
-          <p>
-            Email: <span>cvbstteknik@gmail.com</span>
-            <br />
-            Telp: 081214245300 / 081224642959
-            <br />
-            No./Tgl: <i />
-          </p>
-        </div>
-        <img className="recap-print-logo" src={logo} alt="Logo CV. BST" />
-        <table className="recap-handover-table">
-          <thead>
-            <tr>
-              <th>Diserahkan</th>
-              <th>Diterima</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={2}><strong>CV. BST</strong></td>
-            </tr>
-            <tr>
-              <td>Bpk/Ibu................</td>
-              <td>Bpk/Ibu................</td>
-            </tr>
-          </tbody>
-        </table>
-      </header>
-      <h1>TANDA SERAH TERIMA</h1>
-      <div className="recap-print-types">
-        <strong><Check size={14} /> Jenis</strong>
-        <span><i /> Dokumen</span>
-        <span><i /> Tagihan</span>
-        <span><i /> Giro/cek</span>
-        <span><i /> Lain-Lain</span>
-      </div>
-      <div className="recap-print-fields">
-        {['Sudah diterima', 'Jumlah', 'Keterangan'].map((label) => (
-          <p key={label}><strong>{label}</strong><span>:</span><i /></p>
-        ))}
-      </div>
-      <p className="recap-print-store-label"><strong>Nama Toko</strong><span>:</span></p>
-      <table className="recap-print-store-table">
-        <tbody>
-          {data.stores.map((store) => (
-            <tr key={store.storeId}>
-              <td>{store.name} ({store.code})</td>
-              <td>{currency.format(store.invoiceTotal)}</td>
-              <td>{storeTypes.get(store.storeId) ?? ''}</td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>TOTAL :</td>
-            <td>{currency.format(data.summary.invoiceTotal)}</td>
-            <td />
-          </tr>
-        </tfoot>
-      </table>
-      <p className="recap-print-payment-date">
-        <strong>Tanggal Pembayaran</strong><span>:</span><i />
-      </p>
-    </section>
-  )
-}
-
 export function RecapsPage() {
   const [from, setFrom] = useState(monthStart)
   const [to, setTo] = useState(today)
   const [storeType, setStoreType] = useState('')
+  const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null)
+  const [exportError, setExportError] = useState('')
   const settings = useQuery({ queryKey: ['workspace-settings'], queryFn: getSettings })
   const recap = useQuery({
     queryKey: ['recap-summary', from, to, storeType],
@@ -106,12 +27,47 @@ export function RecapsPage() {
   })
   const data = recap.data
   const summary = data?.summary
-  function printRecap() {
-    window.print()
+  async function exportPdf() {
+    if (!data) return
+    setExporting('pdf')
+    setExportError('')
+    try {
+      const [{ pdf }, { RecapPdfDocument }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('./recap-pdf-document'),
+      ])
+      const blob = await pdf(RecapPdfDocument({ data, logo: settings.data?.logoDataUrl ?? defaultCompanyLogo })).toBlob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `rekap-invoice-${data.period.from}-${data.period.to}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Gagal membuat PDF rekap.')
+    } finally {
+      setExporting(null)
+    }
+  }
+
+  async function exportExcel() {
+    if (!data) return
+    setExporting('excel')
+    setExportError('')
+    try {
+      const { downloadRecapExcel } = await import('./recap-excel-export')
+      downloadRecapExcel(data, settings.data)
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Gagal membuat file Excel rekap.')
+    } finally {
+      setExporting(null)
+    }
   }
 
   return <main className="dashboard-page recap-page"><section className="stores-content recap-content">
-    <div className="stores-heading"><div><p className="eyebrow"><span /> LAPORAN</p><h1>Rekap invoice</h1><p>Daftar invoice berdasarkan rentang tanggal dan tipe toko.</p></div><div className="recap-heading-actions"><span className="store-count">{recap.data?.summary.invoiceCount ?? 0} invoice</span><button className="recap-print-button" type="button" disabled={!data || recap.isLoading} onClick={printRecap}><Printer size={15} /> Cetak PDF</button></div></div>
+    <div className="stores-heading"><div><p className="eyebrow"><span /> LAPORAN</p><h1>Rekap invoice</h1><p>Daftar invoice berdasarkan rentang tanggal dan tipe toko.</p></div><div className="recap-heading-actions"><span className="store-count">{recap.data?.summary.invoiceCount ?? 0} invoice</span><button className="recap-export-button" type="button" disabled={!data || recap.isLoading || exporting !== null} onClick={exportPdf}><Download size={15} /> {exporting === 'pdf' ? 'Membuat PDF...' : 'Ekspor PDF'}</button><button className="recap-export-button is-secondary" type="button" disabled={!data || recap.isLoading || exporting !== null} onClick={exportExcel}><FileSpreadsheet size={15} /> {exporting === 'excel' ? 'Membuat Excel...' : 'Ekspor Excel'}</button></div></div>
     <section className="store-panel recap-filter"><div className="recap-filter-grid">
       <label>Dari tanggal<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
       <label>Sampai tanggal<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label>
@@ -119,6 +75,7 @@ export function RecapsPage() {
     </div>
     {from > to && <p className="panel-message error">Tanggal awal tidak boleh setelah tanggal akhir.</p>}
     </section>
+    {exportError && <p className="panel-message error" role="alert">Ekspor gagal: {exportError}</p>}
     {recap.isLoading && <p className="panel-message">Memuat rekap...</p>}
     {recap.isError && <p className="panel-message error">Rekap gagal dimuat: {recap.error instanceof Error ? recap.error.message : 'Terjadi kesalahan pada server.'}</p>}
     {data && summary && <><div className="recap-cards">
@@ -131,9 +88,5 @@ export function RecapsPage() {
     </section></>}
     {!recap.isLoading && !recap.isError && !summary && <div className="store-panel recap-empty"><BarChart3 size={24} /><p>Pilih periode untuk melihat rekap transaksi.</p></div>}
   </section>
-  {data && createPortal(
-    <RecapPrintSheet data={data} logo={settings.data?.logoDataUrl ?? defaultCompanyLogo} />,
-    document.body,
-  )}
   </main>
 }

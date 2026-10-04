@@ -13,7 +13,33 @@ export class RecapRepository {
 
     return this.database.invoice.findMany({
       where,
-      select: { id: true, number: true, date: true, totalAmount: true, store: { select: { id: true, code: true, name: true, storeType: true } } },
+      select: {
+        id: true,
+        number: true,
+        date: true,
+        purpose: true,
+        totalAmount: true,
+        store: { select: { id: true, code: true, name: true, storeType: true } },
+        bap: {
+          select: {
+            title: true,
+            description: true,
+            items: { select: { serviceName: true }, orderBy: { sortOrder: 'asc' } },
+          },
+        },
+        invoiceBaps: {
+          select: {
+            bap: {
+              select: {
+                title: true,
+                description: true,
+                items: { select: { serviceName: true }, orderBy: { sortOrder: 'asc' } },
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
       orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
     })
   }

@@ -1,6 +1,8 @@
 import { apiFetch } from '../../lib/api'
 import type { Bap } from '../bap/bap-api'
 
+export type InvoiceStatus = 'unpaid' | 'paid' | 'revision'
+
 export interface Invoice {
   id: string
   number: string
@@ -8,6 +10,7 @@ export interface Invoice {
   purpose: string | null
   totalAmount: number
   amountWords: string | null
+  status: InvoiceStatus
   store: { id: string; code: string; name: string; ownerCompany: string | null }
   bap: Bap | null
   baps: Bap[]
@@ -26,6 +29,7 @@ export interface InvoiceUpdateInput {
   date?: string
   purpose?: string
   amountWords?: string
+  status?: InvoiceStatus
 }
 
 export interface InvoiceList {
@@ -33,9 +37,10 @@ export interface InvoiceList {
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
-export function getInvoices(search: string) {
+export function getInvoices(search: string, status?: InvoiceStatus) {
   const params = new URLSearchParams({ page: '1', limit: '20' })
   if (search.trim()) params.set('search', search.trim())
+  if (status) params.set('status', status)
   return apiFetch<InvoiceList>(`/api/invoices?${params}`)
 }
 

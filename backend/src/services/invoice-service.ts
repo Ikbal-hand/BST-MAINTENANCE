@@ -5,8 +5,8 @@ import { InvoiceRepository, type InvoiceCreateData, type InvoiceUpdateData } fro
 export class InvoiceService {
   constructor(private readonly invoices: InvoiceRepository) {}
 
-  async list(workspaceId: string, page: number, limit: number, search?: string) {
-    const [items, total] = await this.invoices.list(workspaceId, page, limit, search)
+  async list(workspaceId: string, page: number, limit: number, search?: string, status?: 'unpaid' | 'paid' | 'revision') {
+    const [items, total] = await this.invoices.list(workspaceId, page, limit, search, status)
     return {
       items: items.map((invoice) => this.toPublicInvoice(invoice)),
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -62,10 +62,7 @@ export class InvoiceService {
     try {
       const invoice = await this.invoices.update(workspaceId, id, data)
       if (!invoice) throw new NotFoundError('Invoice tidak ditemukan')
-      return {
-        ...invoice,
-        baps: invoice.invoiceBaps.map((relation) => relation.bap),
-      }
+      return this.toPublicInvoice(invoice)
     } catch (error) {
       if (this.isUniqueViolation(error)) throw new ConflictError('Nomor invoice sudah digunakan di workspace ini')
       throw error
@@ -146,9 +143,10 @@ export class InvoiceService {
   }
 
   private toPublicInvoice(invoice: Prisma.InvoiceGetPayload<{ include: { store: true; bap: true; invoiceBaps: { include: { bap: { include: { items: true } } } } } }>) {
-    const { status: _status, invoiceBaps, ...publicInvoice } = invoice
+    const { status, invoiceBaps, ...publicInvoice } = invoice
     return {
       ...publicInvoice,
+      status: status === 'draft' ? 'unpaid' : status,
       baps: invoiceBaps.map((relation) => relation.bap),
     }
   }

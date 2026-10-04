@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, MoreVertical, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
-import { useState, type CSSProperties, type FormEvent } from 'react'
+import { useMemo, useState, type CSSProperties, type FormEvent } from 'react'
 import { Button } from '../../components/ui/button'
 import { ComboBox } from '../../components/ui/combo-box'
 import { DataTable, type DataTableColumn } from '../../components/ui/data-table'
 import { DatePicker } from '../../components/ui/date-picker'
 import { getSettings, type WorkspaceSettings } from '../settings/settings-api'
-import { getStores } from '../stores/stores-api'
+import { getAllStores } from '../stores/stores-api'
 import { createBap, deleteBap, getBaps, updateBap, type Bap, type BapInput } from './bap-api'
+import { getSpareparts } from '../spareparts/spareparts-api'
 import { EventPopup, type EventPopupType } from '../../components/ui/event-popup'
 import { BapDetailPopup } from './bap-detail-popup'
 
@@ -49,7 +50,8 @@ export function BapPage() {
   const [message, setMessage] = useState('')
   const settings = useQuery({ queryKey: ['workspace-settings'], queryFn: getSettings })
   const baps = useQuery({ queryKey: ['baps', search, storeType, page], queryFn: () => getBaps(search, page, 10, storeType) })
-  const stores = useQuery({ queryKey: ['stores', 'bap-options'], queryFn: () => getStores('') })
+  const stores = useQuery({ queryKey: ['stores', 'bap-options'], queryFn: getAllStores })
+  const spareparts = useQuery({ queryKey: ['spareparts'], queryFn: getSpareparts })
   const createMutation = useMutation({
     mutationFn: createBap,
     onSuccess: () => {
@@ -57,12 +59,13 @@ export function BapPage() {
       setCreateFormOpen(false)
       setMessage('BAP berhasil dibuat.')
       queryClient.invalidateQueries({ queryKey: ['baps'] })
+      queryClient.invalidateQueries({ queryKey: ['spareparts'] })
     },
     onError: (error) => setMessage(error instanceof Error ? error.message : 'BAP gagal dibuat.'),
   })
   const updateMutation = useMutation({
     mutationFn: ({ id, input }: { id: string; input: BapInput }) => updateBap(id, input),
-    onSuccess: (bap) => { setSelectedBap(bap); setEditing(false); setPopup({ type: 'success', title: 'Perubahan disimpan', description: 'Data BAP berhasil diperbarui.' }); queryClient.invalidateQueries({ queryKey: ['baps'] }) },
+    onSuccess: () => { setSelectedBap(null); setEditing(false); setPopup({ type: 'success', title: 'Perubahan disimpan', description: 'Data BAP berhasil diperbarui.' }); queryClient.invalidateQueries({ queryKey: ['baps'] }); queryClient.invalidateQueries({ queryKey: ['spareparts'] }) },
     onError: (error) => setPopup({ type: 'error', title: 'Gagal memperbarui BAP', description: error instanceof Error ? error.message : 'Silakan coba lagi.' }),
   })
   const deleteMutation = useMutation({
@@ -95,7 +98,20 @@ export function BapPage() {
   }
 
   const total = form.items.reduce((sum, item) => sum + item.unit * item.unitPrice, 0)
-  const storeOptions = stores.data?.items.map((store) => ({ value: store.id, label: store.name, description: `${store.code} · ${store.storeType}` })) ?? []
+  const storeOptions = useMemo(
+    () => stores.data?.map((store) => ({ value: store.id, label: store.name, description: `${store.code} · ${store.storeType}` })) ?? [],
+    [stores.data],
+  )
+  const sparepartOptions = useMemo(() => spareparts.data?.map((sparepart) => ({
+    value: sparepart.name,
+    label: sparepart.name,
+    description: currency.format(sparepart.price),
+  })) ?? [], [spareparts.data])
+
+  function updateWorkItem(index: number, serviceName: string) {
+    const sparepart = spareparts.data?.find((item) => item.name === serviceName)
+    updateItem(index, { serviceName, ...(sparepart ? { unitPrice: sparepart.price } : {}) })
+  }
 
   const bapColumns: DataTableColumn<Bap>[] = [
     { key: 'number', header: 'Nomor BAP', render: (bap) => <><strong>{bap.number}</strong><small>{bap.title}</small></> },
@@ -173,7 +189,7 @@ export function BapPage() {
             </div>,
             document.body,
           )}
-          <BapDetailPopup key={selectedBap?.id ?? 'empty'} bap={selectedBap} editing={editing} busy={updateMutation.isPending} onClose={() => { setSelectedBap(null); setEditing(false) }} onEdit={() => setEditing(true)} onSave={(input) => { if (selectedBap) { setPopup({ type: 'loading', title: 'Menyimpan perubahan', description: 'Data BAP sedang diperbarui.' }); updateMutation.mutate({ id: selectedBap.id, input }) } }} onDelete={() => selectedBap && requestDelete(selectedBap)} />
+          <BapDetailPopup key={selectedBap?.id ?? 'empty'} bap={selectedBap} spareparts={spareparts.data ?? []} stores={stores.data ?? []} storesLoading={stores.isLoading} busy={updateMutation.isPending} editing={editing} onClose={() => { setSelectedBap(null); setEditing(false) }} onEdit={() => setEditing(true)} onSave={(input) => { if (selectedBap) { setPopup({ type: 'loading', title: 'Menyimpan perubahan', description: 'Data BAP sedang diperbarui.' }); updateMutation.mutate({ id: selectedBap.id, input }) } }} onDelete={() => selectedBap && requestDelete(selectedBap)} />
           <EventPopup open={popup !== null} type={popup?.type ?? 'loading'} title={popup?.title ?? ''} description={popup?.description} onClose={() => { setPopup(null); setPendingDeleteBap(null) }} onConfirm={() => { if (pendingDeleteBap) { setPopup({ type: 'loading', title: 'Menghapus BAP', description: 'Data BAP sedang dihapus.' }); deleteMutation.mutate(pendingDeleteBap.id) } }} confirmLabel="Ya, hapus" />
           <section className={`store-panel add-store-panel mobile-create-panel${createFormOpen ? ' is-open' : ''}`}>
             <div className="mobile-create-heading"><h2>Buat BAP</h2><button type="button" className="mobile-create-close" onClick={() => setCreateFormOpen(false)} aria-label="Tutup form buat BAP"><X size={18} /></button></div>
@@ -188,7 +204,15 @@ export function BapPage() {
               <div className="bap-items-heading"><strong>Detail pekerjaan</strong><button type="button" className="inline-action" onClick={() => setForm({ ...form, items: [...form.items, newItem(form.items.length)] })}><Plus size={14} /> Tambah item</button></div>
               {form.items.map((item, index) => (
                 <div className="bap-item-form" key={index}>
-                  <input required aria-label={`Nama pekerjaan ${index + 1}`} value={item.serviceName} onChange={(event) => updateItem(index, { serviceName: event.target.value })} placeholder="Nama pekerjaan" />
+                  <ComboBox
+                    value={item.serviceName}
+                    options={sparepartOptions}
+                    onChange={(serviceName) => updateWorkItem(index, serviceName)}
+                    placeholder="Nama pekerjaan"
+                    searchPlaceholder="Cari atau masukkan nama pekerjaan..."
+                    ariaLabel={`Nama pekerjaan ${index + 1}`}
+                    allowCustomValue
+                  />
                   <input required aria-label={`Jumlah ${index + 1}`} type="number" min="1" value={item.unit} onChange={(event) => updateItem(index, { unit: Number(event.target.value) })} />
                   <input required aria-label={`Harga ${index + 1}`} type="number" min="0" value={item.unitPrice} onChange={(event) => updateItem(index, { unitPrice: Number(event.target.value) })} />
                   <button type="button" className="remove-item" disabled={form.items.length === 1} onClick={() => setForm({ ...form, items: form.items.filter((_, itemIndex) => itemIndex !== index).map((currentItem, currentIndex) => ({ ...currentItem, sortOrder: currentIndex })) })} aria-label="Hapus item"><Trash2 size={15} /></button>

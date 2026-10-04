@@ -20,6 +20,7 @@ model Workspace {
   baps           Bap[]
   invoices       Invoice[]
   documents      Document[]
+  spareparts     Sparepart[]
   developerLogs  DeveloperLog[]
   apiRequestLogs ApiRequestLog[]
   settings       WorkspaceSettings?
@@ -134,7 +135,7 @@ model Invoice {
   bap         Bap?         @relation(fields: [bapId], references: [id])
   invoiceBaps InvoiceBap[]
   purpose     String?
-  status      String       @default("draft")
+  status      String       @default("unpaid")
   totalAmount Int          @default(0)
   amountWords String?
   createdById String
@@ -215,4 +216,17 @@ model ApiRequestLog {
   @@index([workspaceId, createdAt])
   @@index([workspaceId, isSuccess, createdAt])
   @@index([requestId])
+}
+
+model Sparepart {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name        String
+  price       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, name])
 }

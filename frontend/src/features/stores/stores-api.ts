@@ -50,6 +50,17 @@ export function getStores(search: string, page = 1, limit = 20, storeType: Store
   return apiFetch<StoreList>(`/api/stores?${params}`)
 }
 
+export async function getAllStores() {
+  const firstPage = await getStores('', 1, 100)
+  const remainingPages = await Promise.all(
+    Array.from({ length: firstPage.pagination.totalPages - 1 }, (_, index) =>
+      getStores('', index + 2, 100),
+    ),
+  )
+
+  return [firstPage, ...remainingPages].flatMap((page) => page.items)
+}
+
 export function createStore(input: StoreInput) {
   return apiFetch<Store>('/api/stores', {
     method: 'POST',

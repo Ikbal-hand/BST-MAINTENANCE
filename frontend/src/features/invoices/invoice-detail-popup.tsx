@@ -127,6 +127,18 @@ export function InvoiceDetailPopup({
           <>
             <dl className="store-detail-list">
               <div>
+                <dt>Status</dt>
+                <dd>
+                  <span className={`invoice-status-badge is-${invoice.status}`}>
+                    {invoice.status === 'paid'
+                      ? 'Lunas'
+                      : invoice.status === 'revision'
+                        ? 'Perlu Revisi'
+                        : 'Belum dibayar'}
+                  </span>
+                </dd>
+              </div>
+              <div>
                 <dt>Toko</dt>
                 <dd>
                   {invoice.store.code} · {invoice.store.name}
