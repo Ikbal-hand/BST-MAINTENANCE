@@ -131,10 +131,23 @@ export class InvoiceRepository {
     })
   }
 
-  softDelete(workspaceId: string, id: string) {
-    return this.database.invoice.updateMany({
-      where: { id, workspaceId, status: { not: 'deleted' } },
-      data: { status: 'deleted' },
+  async hardDelete(workspaceId: string, id: string) {
+    return this.database.$transaction(async (transaction) => {
+      const invoice = await transaction.invoice.findFirst({
+        where: { id, workspaceId },
+        select: { id: true },
+      })
+      if (!invoice) return { count: 0 }
+
+      // Clear Document.invoiceId references
+      await transaction.document.updateMany({
+        where: { invoiceId: id },
+        data: { invoiceId: null },
+      })
+
+      // InvoiceBap is cascade-deleted automatically
+      await transaction.invoice.delete({ where: { id } })
+      return { count: 1 }
     })
   }
 }

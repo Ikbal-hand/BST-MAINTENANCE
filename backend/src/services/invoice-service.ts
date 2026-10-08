@@ -70,7 +70,7 @@ export class InvoiceService {
   }
 
   async remove(workspaceId: string, id: string) {
-    const result = await this.invoices.softDelete(workspaceId, id)
+    const result = await this.invoices.hardDelete(workspaceId, id)
     if (result.count === 0) throw new NotFoundError('Invoice tidak ditemukan')
   }
 
