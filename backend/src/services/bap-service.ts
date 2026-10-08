@@ -57,8 +57,15 @@ export class BapService {
   }
 
   async remove(workspaceId: string, id: string) {
-    const result = await this.baps.softDelete(workspaceId, id)
-    if (result.count === 0) throw new NotFoundError('BAP tidak ditemukan')
+    try {
+      const result = await this.baps.hardDelete(workspaceId, id)
+      if (result.count === 0) throw new NotFoundError('BAP tidak ditemukan')
+    } catch (error) {
+      if (error instanceof Error && error.message === 'BAP_LINKED_TO_INVOICE') {
+        throw new ConflictError('BAP tidak bisa dihapus karena masih terhubung dengan invoice')
+      }
+      throw error
+    }
   }
 
   private async ensureStore(workspaceId: string, storeId: string) {

@@ -112,10 +112,32 @@ export class BapRepository {
     })
   }
 
-  softDelete(workspaceId: string, id: string) {
-    return this.database.bap.updateMany({
-      where: { id, workspaceId, status: { not: 'deleted' } },
-      data: { status: 'deleted' },
+  async hardDelete(workspaceId: string, id: string) {
+    return this.database.$transaction(async (transaction) => {
+      const bap = await transaction.bap.findFirst({
+        where: { id, workspaceId },
+        select: { id: true },
+      })
+      if (!bap) return { count: 0 }
+
+      // Check if BAP is referenced by any invoice
+      const linkedInvoice = await transaction.invoiceBap.findFirst({
+        where: { bapId: id },
+        select: { invoiceId: true },
+      })
+      if (linkedInvoice) {
+        throw new Error('BAP_LINKED_TO_INVOICE')
+      }
+
+      // Clear legacy Invoice.bapId references
+      await transaction.invoice.updateMany({
+        where: { bapId: id },
+        data: { bapId: null },
+      })
+
+      // BapItems are cascade-deleted automatically
+      await transaction.bap.delete({ where: { id } })
+      return { count: 1 }
     })
   }
 }
