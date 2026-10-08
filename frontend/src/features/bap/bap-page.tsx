@@ -18,8 +18,8 @@ type FormItem = BapInput['items'][number]
 const newItem = (sortOrder: number): FormItem => ({ serviceName: '', unit: 1, unitPrice: 0, sortOrder })
 
 const defaultServiceItems = (transportPrice: number, servicePrice: number): FormItem[] => ([
-  { serviceName: 'Transport', unit: 1, unitPrice: transportPrice, sortOrder: 0 },
-  { serviceName: 'Jasa Service', unit: 1, unitPrice: servicePrice, sortOrder: 1 },
+  { serviceName: 'TRANSPORT', unit: 1, unitPrice: transportPrice, sortOrder: 0 },
+  { serviceName: 'JASA SERVICE', unit: 1, unitPrice: servicePrice, sortOrder: 1 },
 ])
 
 const initialForm = (transportPrice = 0, servicePrice = 0): BapInput => ({

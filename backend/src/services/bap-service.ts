@@ -23,7 +23,7 @@ export class BapService {
   private async processSpareparts(workspaceId: string, items?: { serviceName: string; unitPrice: number }[]) {
     if (!this.spareparts || !items) return
     for (const item of items) {
-      if (item.serviceName && item.serviceName !== 'Transport' && item.serviceName !== 'Jasa Service') {
+      if (item.serviceName && item.serviceName.toUpperCase() !== 'TRANSPORT' && item.serviceName.toUpperCase() !== 'JASA SERVICE') {
         const existing = await this.spareparts.findByName(workspaceId, item.serviceName)
         if (!existing) {
           await this.spareparts.create({ workspaceId, name: item.serviceName, price: item.unitPrice })
