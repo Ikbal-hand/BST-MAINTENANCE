@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kuitansi Dinamis</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef3f5;--panel:#fff;--ink:#16303a;--mut:#5c7480;--line:#cfdce2;--acc:#0b6f8f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181c;--panel:#18242a;--ink:#e3eef2;--mut:#8fa6b0;--line:#2b3c44;--acc:#5cc3e0}}
+:root[data-theme="dark"]{--bg:#10181c;--panel:#18242a;--ink:#e3eef2;--mut:#8fa6b0;--line:#2b3c44;--acc:#5cc3e0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+h1{font-size:18px;margin:0 0 12px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 3px}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+textarea{resize:vertical;min-height:60px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chk{display:flex;gap:8px;align-items:center;margin-top:12px;color:var(--ink);font-size:14px}
+.chk input{width:auto}
+.btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--acc);padding:8px 14px;background:var(--acc);color:#fff}
+button.alt{background:transparent;color:var(--acc)}
+.hint{font-size:12px;color:var(--mut);margin-top:4px}
+.stage{overflow:hidden}
+#fit{transform-origin:top left;width:760px}
+
+/* ---------- Kuitansi (tinggi mengikuti isi) ---------- */
+.rc{--ink2:#0a3b52;--ln:#2b6f8a;--lh:26px;
+ position:relative;width:760px;min-height:335px;display:flex;gap:18px;padding:14px 22px 14px 14px;color:var(--ink2);
+ font-family:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+ background:
+  repeating-linear-gradient(45deg,rgba(40,150,185,.10) 0 1px,transparent 1px 5px),
+  repeating-linear-gradient(-45deg,rgba(40,150,185,.10) 0 1px,transparent 1px 5px),#bfeaf5;
+ border:1px solid #6bb9d1;box-shadow:0 2px 10px rgba(0,60,90,.18);overflow:hidden}
+.ros{position:absolute;border-radius:50%;border:1px solid rgba(30,120,160,.5);
+ background:repeating-radial-gradient(circle,rgba(30,120,160,.55) 0 1px,transparent 1px 3.5px),
+ repeating-conic-gradient(rgba(30,120,160,.18) 0 4deg,transparent 4deg 8deg)}
+.bgr{opacity:.45;top:50%;transform:translateY(-50%)}
+.stub{position:relative;flex:0 0 136px;border:5px double #1d5870;background:rgba(255,255,255,.18);min-height:307px}
+.stub::before{content:"";position:absolute;inset:6px;border:1px solid #1d5870}
+.stub .ros{left:50%;transform:translateX(-50%)}
+.stub .a{width:70px;height:70px;top:6%}
+.stub .b{width:96px;height:96px;top:calc(50% - 48px)}
+.stub .c{width:58px;height:58px;bottom:6%}
+.main{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
+.r{display:grid;grid-template-columns:150px 1fr;column-gap:10px;align-items:start}
+.lb{font-weight:700;font-size:14.5px;line-height:var(--lh)}
+.val{position:relative;line-height:var(--lh);min-height:var(--lh);font:400 15px/var(--lh) "Segoe Print","Bradley Hand","Comic Sans MS",cursive;color:#0a2d40;
+ white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;padding:0 4px}
+.val>span{position:relative}
+/* garis titik-titik per baris */
+.ruled::before{content:"";position:absolute;inset:0;pointer-events:none;
+ background:repeating-linear-gradient(to bottom,transparent 0 calc(var(--lh) - 3px),var(--ln) calc(var(--lh) - 3px) calc(var(--lh) - 2px),transparent calc(var(--lh) - 2px) var(--lh));
+ -webkit-mask-image:repeating-linear-gradient(to right,#000 0 2px,transparent 2px 4px);mask-image:repeating-linear-gradient(to right,#000 0 2px,transparent 2px 4px)}
+.r1 .val{max-width:230px}
+.r-terb .val{font:italic 700 14px/24px Georgia,serif;text-transform:capitalize;padding:3px 18px;color:#06202e;line-height:24px;min-height:30px}
+.r-terb .val::before{content:"";position:absolute;inset:0;transform:skewX(-20deg);
+ background:repeating-linear-gradient(90deg,rgba(25,90,120,.42) 0 2px,rgba(25,90,120,.2) 2px 4px);border-left:1px solid rgba(25,90,120,.5);border-right:1px solid rgba(25,90,120,.5)}
+.r-untuk .val{min-height:calc(var(--lh)*3)}
+.bottom{display:grid;grid-template-columns:1fr 210px;gap:16px;align-items:end;margin-top:auto}
+.jml{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;max-width:300px}
+.jbox{position:relative;border-top:1px solid #1b5d77;border-bottom:1px solid #1b5d77;padding:6px 14px;min-height:36px;
+ font:italic 700 17px/22px Georgia,serif;color:#06202e;overflow-wrap:anywhere}
+.jbox::before{content:"";position:absolute;inset:0;transform:skewX(-20deg);
+ background:repeating-linear-gradient(90deg,rgba(25,90,120,.42) 0 2px,rgba(25,90,120,.2) 2px 4px)}
+.jbox span{position:relative}
+.sign{text-align:center;font-size:13px;line-height:1.35}
+.materai{display:inline-block;margin:6px 0;width:78px;height:40px;border:1px solid #1b5d77;background:rgba(255,255,255,.55);
+ font:700 9px/1.2 Arial,sans-serif;color:#1b5d77;padding-top:6px}
+.nm{font-weight:700;text-decoration:underline;min-height:18px;overflow-wrap:anywhere}
+
+@media print{
+ body{background:#fff}.panel{display:none!important}
+ .wrap{display:block;padding:0}.stage{overflow:visible;height:auto!important}
+ #fit{transform:none!important}
+ @page{size:landscape;margin:12mm}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <section class="panel">
+  <h1>Isi kuitansi</h1>
+  <label for="no">Nomor</label><input id="no" value="001/KWT/2026">
+  <label for="dari">Sudah terima dari</label><input id="dari" value="PT Maju Bersama">
+  <label for="jml">Jumlah uang (Rp)</label><input id="jml" inputmode="numeric">
+  <label for="untuk">Untuk pembayaran</label>
+  <textarea id="untuk">Pembayaran jasa desain grafis bulan Oktober 2026</textarea>
+  <div class="two">
+   <div><label for="kota">Kota</label><input id="kota" value="Bandung"></div>
+   <div><label for="tgl">Tanggal</label><input id="tgl" type="date"></div>
+  </div>
+  <label for="nama">Nama penerima</label><input id="nama" value="Budi Santoso">
+  <label class="chk"><input type="checkbox" id="mat" checked> Tampilkan kotak meterai</label>
+  <div class="hint">Meterai asli ditempel manual setelah dicetak. Kotak ini hanya penanda posisi.</div>
+  <div class="btns">
+   <button id="print">Cetak</button>
+   <button id="png" class="alt">Unduh PNG</button>
+   <button id="reset" class="alt">Kosongkan</button>
+  </div>
+ </section>
+
+ <section class="stage" id="stage">
+  <div id="fit">
+   <div class="rc" id="rc">
+    <div class="ros bgr" style="width:190px;height:190px;left:36%"></div>
+    <div class="ros bgr" style="width:170px;height:170px;left:72%"></div>
+    <div class="stub"><div class="ros a"></div><div class="ros b"></div><div class="ros c"></div></div>
+    <div class="main">
+     <div class="r r1"><div class="lb">No.</div><div class="val ruled"><span id="o_no"></span></div></div>
+     <div class="r"><div class="lb">Sudah terima dari</div><div class="val ruled"><span id="o_dari"></span></div></div>
+     <div class="r r-terb"><div class="lb">Banyaknya uang</div><div class="val"><span id="o_terb"></span></div></div>
+     <div class="r r-untuk"><div class="lb">Untuk pembayaran</div><div class="val ruled"><span id="o_untuk"></span></div></div>
+     <div class="bottom">
+      <div class="jml"><div class="lb">Jumlah Rp.</div><div class="jbox"><span id="o_jml"></span></div></div>
+      <div class="sign">
+       <div id="o_loc"></div>
+       <div id="o_mat" class="materai">METERAI<br>TEMPEL</div>
+       <div class="nm" id="o_nama"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const S=["","satu","dua","tiga","empat","lima","enam","tujuh","delapan","sembilan","sepuluh","sebelas"];
+const BLN=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+function t(n){
+  n=Math.floor(n);
+  if(n<12) return S[n];
+  if(n<20) return t(n-10)+" belas";
+  if(n<100) return t(Math.floor(n/10))+" puluh "+t(n%10);
+  if(n<200) return "seratus "+t(n-100);
+  if(n<1000) return t(Math.floor(n/100))+" ratus "+t(n%100);
+  if(n<2000) return "seribu "+t(n-1000);
+  if(n<1e6) return t(Math.floor(n/1e3))+" ribu "+t(n%1e3);
+  if(n<1e9) return t(Math.floor(n/1e6))+" juta "+t(n%1e6);
+  if(n<1e12) return t(Math.floor(n/1e9))+" miliar "+t(n%1e9);
+  return t(Math.floor(n/1e12))+" triliun "+t(n%1e12);
+}
+const terbilang=n=>!n?"":n>9e15?"Nilai terlalu besar":t(n).replace(/\s+/g," ").trim()+" rupiah";
+const fmt=n=>n?new Intl.NumberFormat("id-ID").format(n)+",-":"";
+const clean=v=>parseInt(String(v).replace(/\D/g,""),10)||0;
+const fmtDate=v=>{if(!v)return"";const[y,m,d]=v.split("-");return `${parseInt(d)} ${BLN[parseInt(m)-1]} ${y}`;};
+
+function fit(){
+  const w=$("stage").clientWidth,s=Math.min(1,w/760);
+  $("fit").style.transform=`scale(${s})`;
+  $("stage").style.height=($("rc").offsetHeight*s+10)+"px";
+}
+function render(){
+  const n=clean($("jml").value);
+  $("o_no").textContent=$("no").value;
+  $("o_dari").textContent=$("dari").value;
+  $("o_terb").textContent=terbilang(n);
+  $("o_untuk").textContent=$("untuk").value;
+  $("o_jml").textContent=fmt(n);
+  $("o_loc").textContent=[$("kota").value,fmtDate($("tgl").value)].filter(Boolean).join(", ");
+  $("o_nama").textContent=$("nama").value;
+  $("o_mat").style.display=$("mat").checked?"inline-block":"none";
+  fit();
+}
+$("jml").addEventListener("input",e=>{const n=clean(e.target.value);e.target.value=n?new Intl.NumberFormat("id-ID").format(n):"";});
+["no","dari","jml","untuk","kota","tgl","nama","mat"].forEach(i=>$(i).addEventListener("input",render));
+$("print").onclick=()=>window.print();
+$("reset").onclick=()=>{["no","dari","jml","untuk","nama"].forEach(i=>$(i).value="");render();};
+$("png").onclick=async()=>{
+  if(typeof html2canvas==="undefined"){alert("Pustaka gambar belum termuat. Gunakan Cetak lalu simpan sebagai PDF.");return;}
+  const f=$("fit"),old=f.style.transform;f.style.transform="none";
+  try{const c=await html2canvas($("rc"),{scale:2,backgroundColor:null});
+   const a=document.createElement("a");a.download="kuitansi.png";a.href=c.toDataURL("image/png");a.click();
+  }catch(e){alert("Gagal membuat PNG. Gunakan Cetak lalu simpan sebagai PDF.");}
+  f.style.transform=old;
+};
+window.addEventListener("resize",fit);
+$("tgl").value=new Date().toISOString().slice(0,10);
+$("jml").value=new Intl.NumberFormat("id-ID").format(2500000);
+render();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+</script>
+</body>
+</html>
