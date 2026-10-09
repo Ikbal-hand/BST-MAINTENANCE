@@ -207,7 +207,7 @@ function InvoicePrint({
               <div className="bottom">
                 <div className="jml"><div className="lb">Jumlah Rp.</div><div className="jbox"><span>{invoice.totalAmount ? new Intl.NumberFormat('id-ID').format(invoice.totalAmount) + ',-' : ''}</span></div></div>
                 <div className="sign">
-                  <div>Tasikmalaya, {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(invoice.createdAt))}</div>
+                  <div>Tasikmalaya, {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(invoice.date))}</div>
                   <div className="materai">METERAI<br/>TEMPEL</div>
                   <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '-4px' }}>
                     {settings?.signatureDataUrl && (
