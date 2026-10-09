@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { changePassword, logout } from '../auth/auth-api'
 import { useAuthStore } from '../../stores/auth-store'
 import { getSettings, updateSettings, type WorkspaceSettings } from './settings-api'
+import { EventPopup, type EventPopupType } from '../../components/ui/event-popup'
 
 const roleLabels: Record<string, string> = {
   developer: 'Developer',
@@ -20,10 +21,13 @@ export function SettingsPage() {
   const [form, setForm] = useState<WorkspaceSettings | null>(null)
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passwordMessage, setPasswordMessage] = useState('')
+  const [popup, setPopup] = useState<{ type: EventPopupType; title: string; description?: string } | null>(null)
   const current = form ?? (settings.data ? { ...settings.data, transportPrice: settings.data.transportPrice ?? 0, servicePrice: settings.data.servicePrice ?? 0 } : undefined)
   const mutation = useMutation({
     mutationFn: updateSettings,
-    onSuccess: (value) => { setForm(value); queryClient.setQueryData(['workspace-settings'], value) },
+    onMutate: () => { setPopup({ type: 'loading', title: 'Menyimpan pengaturan', description: 'Data pengaturan sedang disimpan...' }) },
+    onSuccess: (value) => { setForm(value); queryClient.setQueryData(['workspace-settings'], value); setPopup({ type: 'success', title: 'Berhasil disimpan', description: 'Pengaturan berhasil diperbarui.' }) },
+    onError: (error) => { setPopup({ type: 'error', title: 'Gagal menyimpan', description: error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan pengaturan.' }) },
   })
   const passwordMutation = useMutation({
     mutationFn: () => changePassword(passwordForm.currentPassword, passwordForm.newPassword),
@@ -55,8 +59,7 @@ export function SettingsPage() {
 
   return <main className="dashboard-page"><section className="stores-content settings-content">
     <div className="stores-heading"><div><p className="eyebrow"><span /> SISTEM</p><h1>Pengaturan</h1><p>Informasi akun dan workspace yang sedang digunakan.</p></div></div>
-    {mutation.isSuccess && <p className="form-message settings-success">Pengaturan berhasil disimpan.</p>}
-    {mutation.isError && <p className="form-message error settings-success">Pengaturan gagal disimpan.</p>}
+    <EventPopup open={popup !== null} type={popup?.type ?? 'loading'} title={popup?.title ?? ''} description={popup?.description} onClose={() => setPopup(null)} />
     <form className="settings-layout" onSubmit={(event) => { event.preventDefault(); mutation.mutate({ logoDataUrl: current.logoDataUrl, signerName: current.signerName, bankAccount: current.bankAccount, bankName: current.bankName, bankAccountName: current.bankAccountName, transportPrice: current.transportPrice, servicePrice: current.servicePrice, signatureDataUrl: current.signatureDataUrl, primaryColor: current.primaryColor }) }}>
       <section className="store-panel settings-profile-panel">
         <div className="settings-profile-hero"><span className="settings-avatar">{user.name.slice(0, 1).toUpperCase()}</span><div><h2>{user.name}</h2><p>{user.email}</p></div></div>
