@@ -265,7 +265,7 @@ export function InvoicesPage() {
     try {
       const { pdf } = await import('@react-pdf/renderer')
       const { InvoicePdfDocument } = await import('./invoice-pdf-document')
-      const html2canvas = (await import('html2canvas')).default
+      const { toPng } = await import('html-to-image')
 
       let receiptImage: string | undefined = undefined
       if (printRequest.documentType === 'invoice') {
@@ -273,9 +273,8 @@ export function InvoicesPage() {
         if (rcElement) {
           const oldTransform = rcElement.style.transform
           rcElement.style.transform = 'none'
-          const canvas = await html2canvas(rcElement, { scale: 2, backgroundColor: null })
+          receiptImage = await toPng(rcElement, { pixelRatio: 2, style: { transform: 'scale(1)', transformOrigin: 'top left' } })
           rcElement.style.transform = oldTransform
-          receiptImage = canvas.toDataURL('image/png')
         }
       }
 
