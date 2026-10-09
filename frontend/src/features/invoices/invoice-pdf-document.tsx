@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   receiptNumber: { top: '10%', left: '27%', width: '66%' },
   receiptRecipient: { top: '19%', left: '38%', width: '55%' },
   receiptAmountWords: { top: '30%', left: '38%', width: '55%' },
-  receiptPurpose: { top: '41%', left: '39%', width: '54%' },
+  receiptPurpose: { top: '42.5%', left: '39%', width: '54%' },
   receiptCash: { position: 'absolute', left: '33%', bottom: '14%', fontSize: 13, fontFamily: 'Helvetica-Bold' },
   receiptSignBlock: { position: 'absolute', right: '1%', bottom: '7%', width: '36%', height: '24%', alignItems: 'center', justifyContent: 'flex-end' },
   receiptSignImg: { width: '84%', height: '60%', objectFit: 'contain', transform: 'translateY(5mm)' },

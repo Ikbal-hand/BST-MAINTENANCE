@@ -415,7 +415,7 @@ body { background: #f8faf7; }
 .receipt-number { top: 11%; left: 27%; width: 66%; }
 .receipt-recipient { top: 21%; left: 38%; width: 55%; }
 .receipt-amount-words { top: 31%; left: 38%; width: 55%; }
-.receipt-purpose { top: 42%; left: 39%; width: 54%; max-height: 19%; }
+.receipt-purpose { top: 43%; left: 39%; width: 54%; max-height: 19%; }
 .receipt-cash {
   position: absolute;
   z-index: 1;
@@ -506,7 +506,7 @@ body { background: #f8faf7; }
 .receipt-number { top: 10%; }
 .receipt-recipient { top: 19%; }
 .receipt-amount-words { top: 30%; }
-.receipt-purpose { top: 41%; }
+.receipt-purpose { top: 42.5%; }
 .receipt-cash {
   left: 33%;
   bottom: 14%;
