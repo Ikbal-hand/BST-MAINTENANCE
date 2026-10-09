@@ -1,7 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
 import { type Invoice } from './invoices-api'
 import { type WorkspaceSettings } from '../settings/settings-api'
-import receiptBackground from '../../../../image/background kuetansi.png?inline'
 
 const styles = StyleSheet.create({
   page: {
