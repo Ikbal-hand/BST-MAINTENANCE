@@ -202,13 +202,12 @@ function InvoicePrint({
             <div className="main">
               <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
               <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{invoice.store.ownerCompany ?? '—'}</span></div></div>
-              <div className="r r-terb"><div className="lb">Banyaknya uang</div><div className="val"><span style={{ textTransform: 'capitalize' }}>{invoice.amountWords ? (invoice.amountWords.toLowerCase() + ' rupiah') : '—'}</span></div></div>
+              <div className="r r-terb"><div className="lb">Banyaknya uang</div><div className="val"><span style={{ textTransform: 'capitalize' }}>{invoice.amountWords ? invoice.amountWords.toLowerCase() : '—'}</span></div></div>
               <div className="r r-untuk"><div className="lb">Untuk pembayaran</div><div className="val ruled"><span>{invoice.purpose ?? baps[0]?.title ?? '—'}</span></div></div>
               <div className="bottom">
                 <div className="jml"><div className="lb">Jumlah Rp.</div><div className="jbox"><span>{invoice.totalAmount ? new Intl.NumberFormat('id-ID').format(invoice.totalAmount) + ',-' : ''}</span></div></div>
                 <div className="sign">
                   <div>Tasikmalaya, {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(invoice.date))}</div>
-                  <div className="materai">METERAI<br/>TEMPEL</div>
                   <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '-4px' }}>
                     {settings?.signatureDataUrl && (
                       <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ height: '50px', objectFit: 'contain', marginBottom: '-12px', zIndex: 1, position: 'relative' }} />
@@ -266,8 +265,21 @@ export function InvoicesPage() {
     try {
       const { pdf } = await import('@react-pdf/renderer')
       const { InvoicePdfDocument } = await import('./invoice-pdf-document')
+      const html2canvas = (await import('html2canvas')).default
 
-      const doc = <InvoicePdfDocument invoice={printRequest.invoice} documentType={printRequest.documentType} settings={settings.data} />
+      let receiptImage: string | undefined = undefined
+      if (printRequest.documentType === 'invoice') {
+        const rcElement = document.querySelector('.rc') as HTMLElement | null
+        if (rcElement) {
+          const oldTransform = rcElement.style.transform
+          rcElement.style.transform = 'none'
+          const canvas = await html2canvas(rcElement, { scale: 2, backgroundColor: null })
+          rcElement.style.transform = oldTransform
+          receiptImage = canvas.toDataURL('image/png')
+        }
+      }
+
+      const doc = <InvoicePdfDocument invoice={printRequest.invoice} documentType={printRequest.documentType} settings={settings.data} receiptImage={receiptImage} />
       const blob = await pdf(doc).toBlob()
 
       const prefix = printRequest.documentType === 'sph' ? 'SPH' : 'Tagihan Invoice'

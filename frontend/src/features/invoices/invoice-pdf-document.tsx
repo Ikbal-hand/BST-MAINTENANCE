@@ -83,10 +83,12 @@ export function InvoicePdfDocument({
   invoice,
   documentType,
   settings,
+  receiptImage,
 }: {
   invoice: Invoice
   documentType: 'invoice' | 'sph'
   settings?: WorkspaceSettings
+  receiptImage?: string
 }) {
   const baps = (invoice.baps.length ? invoice.baps : invoice.bap ? [invoice.bap] : []).filter(
     (bap): bap is NonNullable<typeof bap> => Boolean(bap),
@@ -194,23 +196,14 @@ export function InvoicePdfDocument({
       </Page>
 
       {documentType === 'invoice' && (
-        <Page size="A4" style={styles.receiptPage}>
-          <Text style={styles.receiptTitle}>KWITANSI</Text>
-          <View style={styles.receiptTicket}>
-            <Image src={receiptBackground} style={styles.receiptBg} />
-            <Text style={[styles.receiptField, styles.receiptNumber]}>{invoice.number}</Text>
-            <Text style={[styles.receiptField, styles.receiptRecipient]}>{invoice.store.ownerCompany ?? '—'}</Text>
-            <Text style={[styles.receiptField, styles.receiptAmountWords]}>{invoice.amountWords ?? '—'}</Text>
-            <Text style={[styles.receiptField, styles.receiptPurpose]}>{invoice.purpose ?? baps[0]?.title ?? '—'}</Text>
-            <Text style={styles.receiptCash}>{new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(invoice.totalAmount)}</Text>
-
-            <View style={styles.receiptSignBlock}>
-              {settings?.signatureDataUrl && (
-                <Image src={settings.signatureDataUrl} style={styles.receiptSignImg} />
-              )}
-              <Text style={styles.receiptSigner}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</Text>
+        <Page size="A4" orientation="landscape" style={{ padding: '12mm' }}>
+          {receiptImage ? (
+             <Image src={receiptImage} style={{ width: '100%', objectFit: 'contain' }} />
+          ) : (
+            <View>
+               <Text>Kuitansi HTML belum ter-render atau gambar tidak tersedia.</Text>
             </View>
-          </View>
+          )}
         </Page>
       )}
     </Document>
