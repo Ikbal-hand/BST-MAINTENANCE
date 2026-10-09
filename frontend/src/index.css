@@ -378,94 +378,7 @@ body { background: #f8faf7; }
 
 .invoice-print { overflow: visible; }
 .invoice-print .invoice-print-footer { width: auto; margin: 18mm 0 0; border: 0; padding: 0; }
-.receipt-print {
-  display: flex;
-  width: calc(100% + 32mm);
-  min-height: 263mm;
-  margin-left: -16mm;
-  padding: 18mm 8mm;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  page-break-before: always;
-  break-before: page;
-}
-.receipt-print h2 { margin: 0 0 10mm; font-size: 17pt; letter-spacing: .08em; }
-.receipt-ticket {
-  position: relative;
-  isolation: isolate;
-  width: min(194mm, 100%);
-  aspect-ratio: 800 / 303;
-  color: #142b3d;
-  font-family: 'Times New Roman', Times, serif;
-}
-.receipt-ticket-background { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: fill; }
-.receipt-field {
-  position: absolute;
-  z-index: 1;
-  display: block;
-  margin: 0;
-  padding: 0;
-  overflow-wrap: anywhere;
-  font-size: 10pt;
-  font-weight: 600;
-  line-height: 1.2;
-  text-shadow: 0 0 .7mm #fff, 0 0 1.3mm #fff;
-}
-.receipt-number { top: 11%; left: 27%; width: 66%; }
-.receipt-recipient { top: 21%; left: 38%; width: 55%; }
-.receipt-amount-words { top: 31%; left: 38%; width: 55%; }
-.receipt-purpose { top: 43%; left: 39%; width: 54%; max-height: 19%; }
-.receipt-cash {
-  position: absolute;
-  z-index: 1;
-  left: 27%;
-  bottom: 12%;
-  margin: 0;
-  font-size: 13pt;
-  font-weight: 700;
-  text-shadow: 0 0 .8mm #fff, 0 0 1.5mm #fff;
-}
-.receipt-signature-block {
-  position: absolute;
-  z-index: 1;
-  right: 1%;
-  bottom: 7%;
-  display: grid;
-  width: 36%;
-  height: 24%;
-  justify-items: center;
-  align-content: end;
-  gap: 1%;
-}
-.receipt-signature {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: 84%;
-  height: 60%;
-  transform: translateY(10mm);
-  object-fit: contain;
-}
-.receipt-signer {
-  width: 100%;
-  margin: 0;
-  font-size: 8pt;
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 0 .7mm #fff, 0 0 1.3mm #fff;
-}
-.receipt-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
-}
+
 .invoice-section-title,
 .invoice-grand-total,
 .invoice-subtotal td {
@@ -487,33 +400,7 @@ body { background: #f8faf7; }
 .invoice-subtotal td {
   font-weight: 700;
 }
-.receipt-print {
-  min-height: 297mm;
-  justify-content: flex-start;
-}
-.receipt-print h2 {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 17pt;
-  font-weight: 700;
-  letter-spacing: 1pt;
-}
-.receipt-field,
-.receipt-cash,
-.receipt-signer {
-  font-family: Arial, Helvetica, sans-serif;
-  text-shadow: none;
-}
-.receipt-number { top: 10%; }
-.receipt-recipient { top: 19%; }
-.receipt-amount-words { top: 30%; }
-.receipt-purpose { top: 42.5%; }
-.receipt-cash {
-  left: 33%;
-  bottom: 14%;
-}
-.receipt-signature {
-  transform: translateY(5mm);
-}
+
 @page invoice-document { size: A4 portrait; margin: 0; }
 @media print {
   body:has(> .invoice-preview-backdrop) { width: 210mm; margin: 0; }
@@ -521,7 +408,50 @@ body { background: #f8faf7; }
   .invoice-preview-backdrop { page: invoice-document; display: block; width: 210mm; margin: 0; padding: 0; }
   .invoice-print { page: invoice-document; box-sizing: border-box; width: 210mm; max-width: 210mm; min-height: 297mm; margin: 0; padding: 17mm 16mm; overflow: visible; }
   .invoice-summary { break-inside: avoid; page-break-inside: avoid; }
-  .receipt-print { page: invoice-document; width: 210mm; min-height: 263mm; margin-left: -16mm; padding: 18mm 8mm; }
-  .receipt-ticket { width: 194mm; }
-  .receipt-field, .receipt-cash, .receipt-signature-block, .receipt-signature, .receipt-signer { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+
+/* ---------- Kuitansi Dinamis ---------- */
+.rc{--ink2:#0a3b52;--ln:#2b6f8a;--lh:26px;
+ position:relative;width:760px;min-height:335px;display:flex;gap:18px;padding:14px 22px 14px 14px;color:var(--ink2);
+ font-family:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+ background:
+  repeating-linear-gradient(45deg,rgba(40,150,185,.10) 0 1px,transparent 1px 5px),
+  repeating-linear-gradient(-45deg,rgba(40,150,185,.10) 0 1px,transparent 1px 5px),#bfeaf5;
+ border:1px solid #6bb9d1;box-shadow:0 2px 10px rgba(0,60,90,.18);overflow:hidden;
+ -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.ros{position:absolute;border-radius:50%;border:1px solid rgba(30,120,160,.5);
+ background:repeating-radial-gradient(circle,rgba(30,120,160,.55) 0 1px,transparent 1px 3.5px),
+ repeating-conic-gradient(rgba(30,120,160,.18) 0 4deg,transparent 4deg 8deg)}
+.bgr{opacity:.45;top:50%;transform:translateY(-50%)}
+.stub{position:relative;flex:0 0 136px;border:5px double #1d5870;background:rgba(255,255,255,.18);min-height:307px}
+.stub::before{content:"";position:absolute;inset:6px;border:1px solid #1d5870}
+.stub .ros{left:50%;transform:translateX(-50%)}
+.stub .a{width:70px;height:70px;top:6%}
+.stub .b{width:96px;height:96px;top:calc(50% - 48px)}
+.stub .c{width:58px;height:58px;bottom:6%}
+.main{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
+.r{display:grid;grid-template-columns:150px 1fr;column-gap:10px;align-items:start}
+.lb{font-weight:700;font-size:14.5px;line-height:var(--lh)}
+.val{position:relative;line-height:var(--lh);min-height:var(--lh);font:400 15px/var(--lh) "Segoe Print","Bradley Hand","Comic Sans MS",cursive;color:#0a2d40;
+ white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;padding:0 4px}
+.val>span{position:relative; z-index: 1;}
+.ruled::before{content:"";position:absolute;inset:0;pointer-events:none;
+ background:repeating-linear-gradient(to bottom,transparent 0 calc(var(--lh) - 3px),var(--ln) calc(var(--lh) - 3px) calc(var(--lh) - 2px),transparent calc(var(--lh) - 2px) var(--lh));
+ -webkit-mask-image:repeating-linear-gradient(to right,#000 0 2px,transparent 2px 4px);mask-image:repeating-linear-gradient(to right,#000 0 2px,transparent 2px 4px)}
+.r1 .val{max-width:230px}
+.r-terb .val{font:italic 700 14px/24px Georgia,serif;padding:3px 18px;color:#06202e;line-height:24px;min-height:30px}
+.r-terb .val::before{content:"";position:absolute;inset:0;transform:skewX(-20deg);
+ background:repeating-linear-gradient(90deg,rgba(25,90,120,.42) 0 2px,rgba(25,90,120,.2) 2px 4px);border-left:1px solid rgba(25,90,120,.5);border-right:1px solid rgba(25,90,120,.5)}
+.r-untuk .val{min-height:calc(var(--lh)*3)}
+.bottom{display:grid;grid-template-columns:1fr 210px;gap:16px;align-items:end;margin-top:auto}
+.jml{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;max-width:300px}
+.jbox{position:relative;border-top:1px solid #1b5d77;border-bottom:1px solid #1b5d77;padding:6px 14px;min-height:36px;
+ font:italic 700 17px/22px Georgia,serif;color:#06202e;overflow-wrap:anywhere}
+.jbox::before{content:"";position:absolute;inset:0;transform:skewX(-20deg);
+ background:repeating-linear-gradient(90deg,rgba(25,90,120,.42) 0 2px,rgba(25,90,120,.2) 2px 4px)}
+.jbox span{position:relative}
+.sign{text-align:center;font-size:13px;line-height:1.35}
+.materai{display:inline-block;margin:6px 0;width:78px;height:40px;border:1px solid #1b5d77;background:rgba(255,255,255,.55);
+ font:700 9px/1.2 Arial,sans-serif;color:#1b5d77;padding-top:6px}
+.nm{font-weight:700;text-decoration:underline;min-height:18px;overflow-wrap:anywhere}

@@ -10,7 +10,6 @@ import { EventPopup, type EventPopupType } from '../../components/ui/event-popup
 import { getSettings, type WorkspaceSettings } from '../settings/settings-api'
 import { getAllStores } from '../stores/stores-api'
 import { InvoiceDetailPopup } from './invoice-detail-popup'
-import receiptBackground from '../../../../image/background kuetansi.png'
 import {
   createInvoice,
   deleteInvoice,
@@ -194,35 +193,30 @@ function InvoicePrint({
       </table>
 
       {documentType === 'invoice' && (
-        <section className="receipt-print">
-          <h2>KWITANSI</h2>
-          <div className="receipt-ticket">
-            <img className="receipt-ticket-background" src={receiptBackground} alt="" />
-            <p className="receipt-field receipt-number">
-              <span className="receipt-sr-only">Nomor kuitansi: </span>
-              {invoice.number}
-            </p>
-            <p className="receipt-field receipt-recipient">
-              <span className="receipt-sr-only">Telah diterima dari: </span>
-              {invoice.store.ownerCompany ?? '—'}
-            </p>
-            <p className="receipt-field receipt-amount-words">
-              <span className="receipt-sr-only">Uang sejumlah: </span>
-              {invoice.amountWords ?? '—'}
-            </p>
-            <p className="receipt-field receipt-purpose">
-              <span className="receipt-sr-only">Untuk pembayaran: </span>
-              {invoice.purpose ?? baps[0]?.title ?? '—'}
-            </p>
-            <p className="receipt-cash">
-              <span className="receipt-sr-only">Jumlah: </span>
-              {new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(invoice.totalAmount)}
-            </p>
-            <div className="receipt-signature-block">
-              {settings?.signatureDataUrl && (
-                <img className="receipt-signature" src={settings.signatureDataUrl} alt="Tanda tangan admin" />
-              )}
-              <p className="receipt-signer">{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</p>
+        <section className="receipt-print" style={{ pageBreakBefore: 'always', marginTop: '40px' }}>
+          <h2 style={{ margin: '0 0 10mm', fontSize: '17pt', letterSpacing: '.08em' }}>KWITANSI</h2>
+          <div className="rc" style={{ transform: 'scale(0.95)', transformOrigin: 'top left' }}>
+            <div className="ros bgr" style={{ width: '190px', height: '190px', left: '36%' }}></div>
+            <div className="ros bgr" style={{ width: '170px', height: '170px', left: '72%' }}></div>
+            <div className="stub"><div className="ros a"></div><div className="ros b"></div><div className="ros c"></div></div>
+            <div className="main">
+              <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
+              <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{invoice.store.ownerCompany ?? '—'}</span></div></div>
+              <div className="r r-terb"><div className="lb">Banyaknya uang</div><div className="val"><span style={{ textTransform: 'capitalize' }}>{invoice.amountWords ? (invoice.amountWords.toLowerCase() + ' rupiah') : '—'}</span></div></div>
+              <div className="r r-untuk"><div className="lb">Untuk pembayaran</div><div className="val ruled"><span>{invoice.purpose ?? baps[0]?.title ?? '—'}</span></div></div>
+              <div className="bottom">
+                <div className="jml"><div className="lb">Jumlah Rp.</div><div className="jbox"><span>{invoice.totalAmount ? new Intl.NumberFormat('id-ID').format(invoice.totalAmount) + ',-' : ''}</span></div></div>
+                <div className="sign">
+                  <div>Tasikmalaya, {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(invoice.createdAt))}</div>
+                  <div className="materai">METERAI<br/>TEMPEL</div>
+                  <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '-4px' }}>
+                    {settings?.signatureDataUrl && (
+                      <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ height: '50px', objectFit: 'contain', marginBottom: '-12px', zIndex: 1, position: 'relative' }} />
+                    )}
+                    <div className="nm" style={{ marginTop: settings?.signatureDataUrl ? '0' : '30px' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
