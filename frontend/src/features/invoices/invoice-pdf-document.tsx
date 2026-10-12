@@ -165,33 +165,31 @@ export function InvoicePdfDocument({
           </View>
         ))}
 
-        <View wrap={false}>
-          <View style={styles.grandTotal}>
-            <Text style={styles.grandTotalText}>TOTAL KESELURUHAN :</Text>
-            <Text>{currency.format(invoice.totalAmount)}</Text>
-          </View>
+        <View style={styles.grandTotal}>
+          <Text style={styles.grandTotalText}>TOTAL KESELURUHAN :</Text>
+          <Text>{currency.format(invoice.totalAmount)}</Text>
+        </View>
 
-          <View style={styles.footer}>
-            <View style={styles.noteBox}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', textDecoration: 'underline' }}>Note :</Text>
-              <Text style={{ marginVertical: 14 }}>Silahkan transfer ke rekening:</Text>
-              <Text style={{ fontFamily: 'Helvetica-Bold' }}>
-                {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})
-              </Text>
-              <Text style={{ fontFamily: 'Helvetica-Bold' }}>
-                a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
-              </Text>
-            </View>
-            <View style={styles.signBox}>
-              <Text style={{ marginBottom: 5 }}>Hormat Kami,</Text>
-              {settings?.signatureDataUrl && (
-                <Image src={settings.signatureDataUrl} style={styles.signatureImg} />
-              )}
-              <Text style={{ fontFamily: 'Helvetica-Bold', marginTop: 5 }}>
-                {settings?.signerName ?? 'Muhamad Zidan Fauzan'}
-              </Text>
-              <Text style={{ fontSize: 10 }}>(Service Admin)</Text>
-            </View>
+        <View wrap={false} style={styles.footer}>
+          <View style={styles.noteBox}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', textDecoration: 'underline' }}>Note :</Text>
+            <Text style={{ marginVertical: 14 }}>Silahkan transfer ke rekening:</Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold' }}>
+              {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})
+            </Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold' }}>
+              a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
+            </Text>
+          </View>
+          <View style={styles.signBox}>
+            <Text style={{ marginBottom: 5 }}>Hormat Kami,</Text>
+            {settings?.signatureDataUrl && (
+              <Image src={settings.signatureDataUrl} style={styles.signatureImg} />
+            )}
+            <Text style={{ fontFamily: 'Helvetica-Bold', marginTop: 5 }}>
+              {settings?.signerName ?? 'Muhamad Zidan Fauzan'}
+            </Text>
+            <Text style={{ fontSize: 10 }}>(Service Admin)</Text>
           </View>
         </View>
       </Page>
