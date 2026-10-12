@@ -160,46 +160,50 @@ function InvoicePrint({
         </table>
       ))}
 
-      {/* ── GRAND TOTAL ── */}
-      <div className="invoice-grand-total">
-        <strong>TOTAL KESELURUHAN :</strong>
-        <strong>{currency.format(invoice.totalAmount)}</strong>
+      {/* ── GRAND TOTAL + FOOTER (kept together, never page-break inside) ── */}
+      <div style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+        <div className="invoice-grand-total">
+          <strong>TOTAL KESELURUHAN :</strong>
+          <strong>{currency.format(invoice.totalAmount)}</strong>
+        </div>
+
+        {/* ── FOOTER: Note + Tanda Tangan ── */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '18mm' }}>
+          <tbody>
+            <tr>
+              <td style={{ verticalAlign: 'top', lineHeight: '1.45' }}>
+                <strong><u>Note :</u></strong>
+                <p style={{ margin: '14px 0 12px' }}>Silahkan transfer ke rekening:</p>
+                <strong>
+                  {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})<br />
+                  a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
+                </strong>
+              </td>
+              <td style={{ verticalAlign: 'top', textAlign: 'center', width: '48mm', lineHeight: '1.45' }}>
+                <p style={{ margin: '0 0 2mm' }}>Hormat Kami,</p>
+                <div style={{ display: 'block', textAlign: 'center' }}>
+                  {settings?.signatureDataUrl && (
+                    <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ display: 'block', width: '35mm', height: '18mm', objectFit: 'contain', margin: '0 auto' }} />
+                  )}
+                  <strong style={{ display: 'block' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
+                </div>
+                <span style={{ fontSize: '10pt' }}>(Service Admin)</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      {/* ── FOOTER: Note + Tanda Tangan ── */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '18mm', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-        <tbody>
-          <tr>
-            <td style={{ verticalAlign: 'top', lineHeight: '1.45' }}>
-              <strong><u>Note :</u></strong>
-              <p style={{ margin: '14px 0 12px' }}>Silahkan transfer ke rekening:</p>
-              <strong>
-                {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})<br />
-                a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
-              </strong>
-            </td>
-            <td style={{ verticalAlign: 'top', textAlign: 'center', width: '48mm', lineHeight: '1.45' }}>
-              <p style={{ margin: '0 0 2mm' }}>Hormat Kami,</p>
-              <div style={{ display: 'block', textAlign: 'center' }}>
-                {settings?.signatureDataUrl && (
-                  <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ display: 'block', width: '35mm', height: '18mm', objectFit: 'contain', margin: '0 auto' }} />
-                )}
-                <strong style={{ display: 'block' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
-              </div>
-              <span style={{ fontSize: '10pt' }}>(Service Admin)</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
       {documentType === 'invoice' && (
-        <section className="receipt-print" style={{ pageBreakBefore: 'always', marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <section className="receipt-print" style={{ pageBreakBefore: 'always', marginTop: '40px' }}>
           <h2 style={{ margin: '0 0 10mm', fontSize: '17pt', letterSpacing: '.08em' }}>KWITANSI</h2>
           <div className="rc">
+            <div className="ros bgr" style={{ width: '160px', height: '160px', left: '38%' }}></div>
+            <div className="ros bgr" style={{ width: '140px', height: '140px', left: '72%' }}></div>
             <div className="stub">
-              <div className="ros a" style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}></div>
-              <div className="ros b" style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}></div>
-              <div className="ros c" style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}></div>
+              <div className="ros a"></div>
+              <div className="ros b"></div>
+              <div className="ros c"></div>
             </div>
             <div className="main">
               <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
@@ -209,12 +213,11 @@ function InvoicePrint({
               <div className="bottom">
                 <div className="jml"><div className="lb">Jumlah Rp.</div><div className="jbox"><span>{invoice.totalAmount ? new Intl.NumberFormat('id-ID').format(invoice.totalAmount) + ',-' : ''}</span></div></div>
                 <div className="sign">
-                  <div>Tasikmalaya, {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(invoice.date))}</div>
-                  <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '-4px' }}>
+                  <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     {settings?.signatureDataUrl && (
-                      <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ height: '50px', objectFit: 'contain', marginBottom: '-12px', zIndex: 1, position: 'relative' }} />
+                      <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ height: '46px', objectFit: 'contain', marginBottom: '-10px', zIndex: 1, position: 'relative' }} />
                     )}
-                    <div className="nm" style={{ marginTop: settings?.signatureDataUrl ? '0' : '30px' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</div>
+                    <div className="nm" style={{ marginTop: settings?.signatureDataUrl ? '0' : '28px' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</div>
                   </div>
                 </div>
               </div>
