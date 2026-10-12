@@ -193,12 +193,14 @@ function InvoicePrint({
       </table>
 
       {documentType === 'invoice' && (
-        <section className="receipt-print" style={{ pageBreakBefore: 'always', marginTop: '40px' }}>
+        <section className="receipt-print" style={{ pageBreakBefore: 'always', marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h2 style={{ margin: '0 0 10mm', fontSize: '17pt', letterSpacing: '.08em' }}>KWITANSI</h2>
-          <div className="rc" style={{ transform: 'scale(0.95)', transformOrigin: 'top left' }}>
-            <div className="ros bgr" style={{ width: '190px', height: '190px', left: '36%' }}></div>
-            <div className="ros bgr" style={{ width: '170px', height: '170px', left: '72%' }}></div>
-            <div className="stub"><div className="ros a"></div><div className="ros b"></div><div className="ros c"></div></div>
+          <div className="rc">
+            <div className="stub">
+              <div className="ros a" style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}></div>
+              <div className="ros b" style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}></div>
+              <div className="ros c" style={{ position: 'relative', left: 'unset', top: 'unset', transform: 'none' }}></div>
+            </div>
             <div className="main">
               <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
               <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{invoice.store.ownerCompany ?? '—'}</span></div></div>

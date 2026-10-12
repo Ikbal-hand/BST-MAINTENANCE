@@ -411,10 +411,10 @@ body { background: #f8faf7; }
 }
 
 
-/* ---------- Kuitansi Dinamis ---------- */
-.rc{--ink2:#0a3b52;--ln:#2b6f8a;--lh:26px;
- position:relative;width:760px;min-height:335px;display:flex;gap:18px;padding:14px 22px 14px 14px;color:var(--ink2);
- font-family:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+/* ---------- Kuitansi Dinamis (Portrait) ---------- */
+.rc{--ink2:#0a3b52;--ln:#2b6f8a;--lh:28px;
+ position:relative;width:100%;max-width:550px;display:flex;flex-direction:column;gap:0;
+ color:var(--ink2);font-family:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
  background:
   repeating-linear-gradient(45deg,rgba(40,150,185,.10) 0 1px,transparent 1px 5px),
   repeating-linear-gradient(-45deg,rgba(40,150,185,.10) 0 1px,transparent 1px 5px),#bfeaf5;
@@ -424,13 +424,15 @@ body { background: #f8faf7; }
  background:repeating-radial-gradient(circle,rgba(30,120,160,.55) 0 1px,transparent 1px 3.5px),
  repeating-conic-gradient(rgba(30,120,160,.18) 0 4deg,transparent 4deg 8deg)}
 .bgr{opacity:.45;top:50%;transform:translateY(-50%)}
-.stub{position:relative;flex:0 0 136px;border:5px double #1d5870;background:rgba(255,255,255,.18);min-height:307px}
+.stub{position:relative;flex:0 0 auto;height:100px;border:5px double #1d5870;
+ background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;gap:20px;
+ padding:10px 20px;}
 .stub::before{content:"";position:absolute;inset:6px;border:1px solid #1d5870}
-.stub .ros{left:50%;transform:translateX(-50%)}
-.stub .a{width:70px;height:70px;top:6%}
-.stub .b{width:96px;height:96px;top:calc(50% - 48px)}
-.stub .c{width:58px;height:58px;bottom:6%}
-.main{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
+.stub .ros{position:relative;left:unset;top:unset;transform:none;flex-shrink:0}
+.stub .a{width:60px;height:60px;}
+.stub .b{width:76px;height:76px;}
+.stub .c{width:52px;height:52px;}
+.main{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;padding:14px 22px 16px 22px;}
 .r{display:grid;grid-template-columns:150px 1fr;column-gap:10px;align-items:start}
 .lb{font-weight:700;font-size:14.5px;line-height:var(--lh)}
 .val{position:relative;line-height:var(--lh);min-height:var(--lh);font:400 15px/var(--lh) "Segoe Print","Bradley Hand","Comic Sans MS",cursive;color:#0a2d40;
@@ -443,15 +445,13 @@ body { background: #f8faf7; }
 .r-terb .val{font:italic 700 14px/24px Georgia,serif;padding:3px 18px;color:#06202e;line-height:24px;min-height:30px}
 .r-terb .val::before{content:"";position:absolute;inset:0;transform:skewX(-20deg);
  background:repeating-linear-gradient(90deg,rgba(25,90,120,.42) 0 2px,rgba(25,90,120,.2) 2px 4px);border-left:1px solid rgba(25,90,120,.5);border-right:1px solid rgba(25,90,120,.5)}
-.r-untuk .val{min-height:calc(var(--lh)*3)}
-.bottom{display:grid;grid-template-columns:1fr 210px;gap:16px;align-items:end;margin-top:auto}
-.jml{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;max-width:300px}
+.r-untuk .val{min-height:calc(var(--lh)*2)}
+.bottom{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;margin-top:auto}
+.jml{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;}
 .jbox{position:relative;border-top:1px solid #1b5d77;border-bottom:1px solid #1b5d77;padding:6px 14px;min-height:36px;
  font:italic 700 17px/22px Georgia,serif;color:#06202e;overflow-wrap:anywhere}
 .jbox::before{content:"";position:absolute;inset:0;transform:skewX(-20deg);
  background:repeating-linear-gradient(90deg,rgba(25,90,120,.42) 0 2px,rgba(25,90,120,.2) 2px 4px)}
 .jbox span{position:relative}
-.sign{text-align:center;font-size:13px;line-height:1.35}
-.materai{display:inline-block;margin:6px 0;width:78px;height:40px;border:1px solid #1b5d77;background:rgba(255,255,255,.55);
- font:700 9px/1.2 Arial,sans-serif;color:#1b5d77;padding-top:6px}
+.sign{text-align:center;font-size:13px;line-height:1.35;min-width:160px;}
 .nm{font-weight:700;text-decoration:underline;min-height:18px;overflow-wrap:anywhere}

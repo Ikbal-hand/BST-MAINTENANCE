@@ -195,7 +195,8 @@ export function InvoicePdfDocument({
       </Page>
 
       {documentType === 'invoice' && (
-        <Page size="A4" orientation="landscape" style={{ padding: '12mm' }}>
+        <Page size="A4" style={{ padding: '15mm', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Text style={{ fontSize: 17, fontFamily: 'Helvetica-Bold', letterSpacing: 1, marginBottom: 20, textAlign: 'center' }}>KWITANSI</Text>
           {receiptImage ? (
              <Image src={receiptImage} style={{ width: '100%', objectFit: 'contain' }} />
           ) : (
