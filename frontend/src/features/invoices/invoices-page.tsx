@@ -7,6 +7,7 @@ import { ComboBox } from '../../components/ui/combo-box'
 import { DataTable, type DataTableColumn } from '../../components/ui/data-table'
 import { DatePicker } from '../../components/ui/date-picker'
 import { EventPopup, type EventPopupType } from '../../components/ui/event-popup'
+import { Invoice as WordInvoice } from '../../components/Invoice/Invoice'
 import { getSettings, type WorkspaceSettings } from '../settings/settings-api'
 import { getAllStores } from '../stores/stores-api'
 import { InvoiceDetailPopup } from './invoice-detail-popup'
@@ -46,6 +47,77 @@ function InvoicePrint({
   const baps = (invoice.baps.length ? invoice.baps : invoice.bap ? [invoice.bap] : []).filter(
     (bap): bap is NonNullable<typeof bap> => Boolean(bap),
   )
+
+  if (documentType === 'invoice') {
+    const sections = baps.map((bap) => ({
+      judul: bap.title,
+      deskripsi: bap.description ?? undefined,
+      items: bap.items.map((item) => ({
+        service: item.serviceName,
+        unit: item.unit,
+        hargaSatuan: item.unitPrice,
+        subTotal: item.subtotal,
+      })),
+      total: bap.totalAmount,
+    }))
+
+    return (
+      <div className="invoice-print has-invoice-component" ref={innerRef}>
+        <WordInvoice
+          noInvoice={invoice.number}
+          tanggal={formatDate(invoice.date)}
+          toko={{
+            kode: invoice.store.code,
+            nama: invoice.store.name,
+            milik: invoice.store.ownerCompany ?? invoice.store.ownerName ?? '—',
+          }}
+          sections={sections}
+          total={invoice.totalAmount}
+          payment={{
+            label: 'Silahkan transfer ke rekening:',
+            rekening: `${settings?.bankAccount ?? '0548985555'} (${settings?.bankName ?? 'BCA'})`,
+            atasNama: `a/n ${settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}`,
+          }}
+          signer={{
+            salam: 'Hormat Kami,',
+            nama: settings?.signerName ?? 'Muhamad Zidan Fauzan',
+            jabatan: '(Service Admin)',
+            signatureSrc: settings?.signatureDataUrl ?? undefined,
+          }}
+        />
+
+        <section className="receipt-print" style={{ breakBefore: 'page', pageBreakBefore: 'always', marginTop: '40px', padding: '17mm 16mm' }}>
+          <h2 style={{ margin: '0 0 10mm', fontSize: '17pt', letterSpacing: '.08em' }}>KWITANSI</h2>
+          <div className="rc">
+            <div className="ros bgr" style={{ width: '160px', height: '160px', left: '38%' }}></div>
+            <div className="ros bgr" style={{ width: '140px', height: '140px', left: '72%' }}></div>
+            <div className="stub">
+              <div className="ros a"></div>
+              <div className="ros b"></div>
+              <div className="ros c"></div>
+            </div>
+            <div className="main">
+              <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
+              <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{invoice.store.ownerCompany ?? '—'}</span></div></div>
+              <div className="r r-terb"><div className="lb">Banyaknya uang</div><div className="val"><span style={{ textTransform: 'capitalize' }}>{invoice.amountWords ? invoice.amountWords.toLowerCase() : '—'}</span></div></div>
+              <div className="r r-untuk"><div className="lb">Untuk pembayaran</div><div className="val ruled"><span>{invoice.purpose ?? baps[0]?.title ?? '—'}</span></div></div>
+              <div className="bottom">
+                <div className="jml"><div className="lb">Jumlah Rp.</div><div className="jbox"><span>{invoice.totalAmount ? new Intl.NumberFormat('id-ID').format(invoice.totalAmount) + ',-' : ''}</span></div></div>
+                <div className="sign">
+                  <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    {settings?.signatureDataUrl && (
+                      <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ height: '46px', objectFit: 'contain', marginBottom: '-10px', zIndex: 1, position: 'relative' }} />
+                    )}
+                    <div className="nm" style={{ marginTop: settings?.signatureDataUrl ? '0' : '28px' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   // Shared border style used everywhere
   const border = '1px solid #111'

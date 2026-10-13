@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
 import { type Invoice } from './invoices-api'
 import { type WorkspaceSettings } from '../settings/settings-api'
+import invoiceHeaderPng from '../../components/Invoice/invoice-header.png'
 
 const styles = StyleSheet.create({
   page: {
@@ -96,25 +97,29 @@ export function InvoicePdfDocument({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            {settings?.logoDataUrl ? (
-              <Image src={settings.logoDataUrl} style={styles.logo} />
-            ) : (
-              <Text style={styles.logoText}>BST</Text>
-            )}
-            <Text style={styles.companyName}>CV. BERKARYA SATU TUJUAN</Text>
+        {documentType === 'invoice' ? (
+          <Image src={invoiceHeaderPng} style={{ width: '100%', height: 'auto', marginBottom: 12 }} />
+        ) : (
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              {settings?.logoDataUrl ? (
+                <Image src={settings.logoDataUrl} style={styles.logo} />
+              ) : (
+                <Text style={styles.logoText}>BST</Text>
+              )}
+              <Text style={styles.companyName}>CV. BERKARYA SATU TUJUAN</Text>
+            </View>
+            <View style={styles.headerCenter}>
+              <Text style={styles.docType}>SPH</Text>
+            </View>
+            <View style={styles.headerRight}>
+              <Text style={styles.companyNameRight}>CV. BERKARYA SATU TUJUAN</Text>
+              <Text>Kp. Cilamajang, RT/RW. 004/006, Kel. Cipawitra,</Text>
+              <Text>Kec. Mangkubumi, Kota Tasikmalaya, 46181</Text>
+              <Text style={{ marginTop: 5 }}>No Telp. 081214245300</Text>
+            </View>
           </View>
-          <View style={styles.headerCenter}>
-            <Text style={styles.docType}>{documentType === 'sph' ? 'SPH' : 'INVOICE'}</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <Text style={styles.companyNameRight}>CV. BERKARYA SATU TUJUAN</Text>
-            <Text>Kp. Cilamajang, RT/RW. 004/006, Kel. Cipawitra,</Text>
-            <Text>Kec. Mangkubumi, Kota Tasikmalaya, 46181</Text>
-            <Text style={{ marginTop: 5 }}>No Telp. 081214245300</Text>
-          </View>
-        </View>
+        )}
 
         <View style={styles.metaRow}>
           <View style={styles.metaBox}>

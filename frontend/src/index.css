@@ -410,6 +410,24 @@ body { background: #f8faf7; }
   .invoice-summary { break-inside: avoid; page-break-inside: avoid; }
 }
 
+.invoice-print.has-invoice-component {
+  box-sizing: border-box;
+  width: 210mm;
+  max-width: 100%;
+  margin: auto;
+  padding: 0;
+  background: transparent;
+}
+@media print {
+  .invoice-print.has-invoice-component {
+    box-sizing: border-box;
+    width: 210mm;
+    max-width: 210mm;
+    margin: 0;
+    padding: 0;
+  }
+}
+
 
 /* ---------- Kuitansi Dinamis ---------- */
 .rc{--ink2:#0a3b52;--ln:#2b6f8a;--lh:24px;
