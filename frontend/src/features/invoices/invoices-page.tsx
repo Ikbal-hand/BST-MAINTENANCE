@@ -69,7 +69,7 @@ function InvoicePrint({
           toko={{
             kode: invoice.store.code,
             nama: invoice.store.name,
-            milik: invoice.store.ownerCompany ?? invoice.store.ownerName ?? '—',
+            milik: invoice.store.ownerCompany ?? '—',
           }}
           sections={sections}
           total={invoice.totalAmount}
@@ -265,38 +265,6 @@ function InvoicePrint({
           </tbody>
         </table>
       </div>
-
-      {documentType === 'invoice' && (
-        <section className="receipt-print" style={{ pageBreakBefore: 'always', marginTop: '40px' }}>
-          <h2 style={{ margin: '0 0 10mm', fontSize: '17pt', letterSpacing: '.08em' }}>KWITANSI</h2>
-          <div className="rc">
-            <div className="ros bgr" style={{ width: '160px', height: '160px', left: '38%' }}></div>
-            <div className="ros bgr" style={{ width: '140px', height: '140px', left: '72%' }}></div>
-            <div className="stub">
-              <div className="ros a"></div>
-              <div className="ros b"></div>
-              <div className="ros c"></div>
-            </div>
-            <div className="main">
-              <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
-              <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{invoice.store.ownerCompany ?? '—'}</span></div></div>
-              <div className="r r-terb"><div className="lb">Banyaknya uang</div><div className="val"><span style={{ textTransform: 'capitalize' }}>{invoice.amountWords ? invoice.amountWords.toLowerCase() : '—'}</span></div></div>
-              <div className="r r-untuk"><div className="lb">Untuk pembayaran</div><div className="val ruled"><span>{invoice.purpose ?? baps[0]?.title ?? '—'}</span></div></div>
-              <div className="bottom">
-                <div className="jml"><div className="lb">Jumlah Rp.</div><div className="jbox"><span>{invoice.totalAmount ? new Intl.NumberFormat('id-ID').format(invoice.totalAmount) + ',-' : ''}</span></div></div>
-                <div className="sign">
-                  <div className="nm-sign" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    {settings?.signatureDataUrl && (
-                      <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ height: '46px', objectFit: 'contain', marginBottom: '-10px', zIndex: 1, position: 'relative' }} />
-                    )}
-                    <div className="nm" style={{ marginTop: settings?.signatureDataUrl ? '0' : '28px' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   )
 }
