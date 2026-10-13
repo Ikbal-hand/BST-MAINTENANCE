@@ -8,6 +8,7 @@ import { DataTable, type DataTableColumn } from '../../components/ui/data-table'
 import { DatePicker } from '../../components/ui/date-picker'
 import { EventPopup, type EventPopupType } from '../../components/ui/event-popup'
 import { Invoice as WordInvoice } from '../../components/Invoice/Invoice'
+import sphHeaderPng from '../../components/Invoice/sph-header.png'
 import { getSettings, type WorkspaceSettings } from '../settings/settings-api'
 import { getAllStores } from '../stores/stores-api'
 import { InvoiceDetailPopup } from './invoice-detail-popup'
@@ -48,44 +49,48 @@ function InvoicePrint({
     (bap): bap is NonNullable<typeof bap> => Boolean(bap),
   )
 
-  if (documentType === 'invoice') {
-    const sections = baps.map((bap) => ({
-      judul: bap.title,
-      deskripsi: bap.description ?? undefined,
-      items: bap.items.map((item) => ({
-        service: item.serviceName,
-        unit: item.unit,
-        hargaSatuan: item.unitPrice,
-        subTotal: item.subtotal,
-      })),
-      total: bap.totalAmount,
-    }))
+  const isSph = documentType === 'sph'
 
-    return (
-      <div className="invoice-print has-invoice-component" ref={innerRef}>
-        <WordInvoice
-          noInvoice={invoice.number}
-          tanggal={formatDate(invoice.date)}
-          toko={{
-            kode: invoice.store.code,
-            nama: invoice.store.name,
-            milik: invoice.store.ownerCompany ?? '—',
-          }}
-          sections={sections}
-          total={invoice.totalAmount}
-          payment={{
-            label: 'Silahkan transfer ke rekening:',
-            rekening: `${settings?.bankAccount ?? '0548985555'} (${settings?.bankName ?? 'BCA'})`,
-            atasNama: `a/n ${settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}`,
-          }}
-          signer={{
-            salam: 'Hormat Kami,',
-            nama: settings?.signerName ?? 'Muhamad Zidan Fauzan',
-            jabatan: '(Service Admin)',
-            signatureSrc: settings?.signatureDataUrl ?? undefined,
-          }}
-        />
+  const sections = baps.map((bap) => ({
+    judul: bap.title,
+    deskripsi: bap.description ?? undefined,
+    items: bap.items.map((item) => ({
+      service: item.serviceName,
+      unit: item.unit,
+      hargaSatuan: item.unitPrice,
+      subTotal: item.subtotal,
+    })),
+    total: bap.totalAmount,
+  }))
 
+  return (
+    <div className="invoice-print has-invoice-component" ref={innerRef}>
+      <WordInvoice
+        headerSrc={isSph ? sphHeaderPng : undefined}
+        noLabel={isSph ? 'NO SPH :' : 'NO INVOICE :'}
+        noInvoice={invoice.number}
+        tanggal={formatDate(invoice.date)}
+        toko={{
+          kode: invoice.store.code,
+          nama: invoice.store.name,
+          milik: invoice.store.ownerCompany ?? '—',
+        }}
+        sections={sections}
+        total={invoice.totalAmount}
+        payment={{
+          label: 'Silahkan transfer ke rekening:',
+          rekening: `${settings?.bankAccount ?? '0548985555'} (${settings?.bankName ?? 'BCA'})`,
+          atasNama: `a/n ${settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}`,
+        }}
+        signer={{
+          salam: 'Hormat Kami,',
+          nama: settings?.signerName ?? 'Muhamad Zidan Fauzan',
+          jabatan: '(Service Admin)',
+          signatureSrc: settings?.signatureDataUrl ?? undefined,
+        }}
+      />
+
+      {!isSph && (
         <section className="receipt-print" style={{ breakBefore: 'page', pageBreakBefore: 'always', marginTop: '40px', padding: '17mm 16mm' }}>
           <h2 style={{ margin: '0 0 10mm', fontSize: '17pt', letterSpacing: '.08em' }}>KWITANSI</h2>
           <div className="rc">
@@ -115,156 +120,7 @@ function InvoicePrint({
             </div>
           </div>
         </section>
-      </div>
-    )
-  }
-
-  // Shared border style used everywhere
-  const border = '1px solid #111'
-
-  return (
-    <div className="invoice-print" ref={innerRef}>
-      {/* ── HEADER: logo | judul | alamat perusahaan ── */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', marginBottom: '3mm' }}>
-        <tbody>
-          <tr>
-            {/* Logo */}
-            <td style={{ width: '34%', verticalAlign: 'top', textAlign: 'center' }}>
-              {settings?.logoDataUrl
-                ? <img src={settings.logoDataUrl} alt="Logo" style={{ display: 'block', width: '48mm', height: '24mm', objectFit: 'contain', margin: '0 auto' }} />
-                : <strong style={{ color: '#e30613', fontSize: '37pt', fontFamily: 'Arial, sans-serif', letterSpacing: '-7px', lineHeight: '0.8', display: 'block' }}>BST</strong>}
-              <span style={{ display: 'block', marginTop: '5px', fontSize: '8pt', fontWeight: 700, whiteSpace: 'nowrap' }}>CV. BERKARYA SATU TUJUAN</span>
-            </td>
-            {/* Judul */}
-            <td style={{ width: '32%', verticalAlign: 'bottom', textAlign: 'center', paddingBottom: '2mm' }}>
-              <span style={{ fontFamily: 'Arial, sans-serif', fontSize: '21pt', fontWeight: 700, textDecoration: 'underline' }}>
-                {documentType === 'sph' ? 'SPH' : 'INVOICE'}
-              </span>
-            </td>
-            {/* Alamat perusahaan */}
-            <td style={{ width: '34%', verticalAlign: 'top', fontSize: '8pt', lineHeight: '1.3' }}>
-              <strong style={{ display: 'block', fontSize: '9.5pt' }}>CV. BERKARYA SATU TUJUAN</strong>
-              <span style={{ display: 'block', marginTop: '5px' }}>
-                Kp. Cilamajang, RT/RW. 004/006, Kel. Cipawitra,<br />
-                Kec. Mangkubumi, Kota Tasikmalaya, 46181
-              </span>
-              <span style={{ display: 'block', marginTop: '5px' }}>No Telp. 081214245300</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      {/* ── META: Bill To | No Invoice / Tanggal ── */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', marginTop: '3mm' }}>
-        <tbody>
-          <tr>
-            {/* Bill To */}
-            <td style={{ width: '49%', height: '32mm', border, verticalAlign: 'top', padding: 0 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: '5px', textAlign: 'center', borderBottom: border, fontFamily: 'Arial, sans-serif', fontWeight: 700 }}>BILL TO</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '7px', fontWeight: 700, minHeight: '13mm', display: 'block' }}>{invoice.store.ownerCompany ?? '—'}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '7px', borderTop: border }}>
-                      TOKO : {invoice.store.name}<br />
-                      KODE : {invoice.store.code}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
-            {/* Spacer */}
-            <td style={{ width: '2%' }} />
-            {/* No Invoice / Tanggal */}
-            <td style={{ width: '49%', height: '32mm', border, verticalAlign: 'top', padding: 0 }}>
-              <table style={{ width: '100%', height: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                <tbody>
-                  <tr style={{ height: '100%' }}>
-                    <td style={{ width: '50%', padding: '7px', verticalAlign: 'top', fontFamily: 'Arial, sans-serif', fontWeight: 700 }}>
-                      {documentType === 'sph' ? 'NO SPH' : 'NO INVOICE'}<br />
-                      {invoice.number}
-                    </td>
-                    <td style={{ width: '50%', padding: '7px', verticalAlign: 'top', borderLeft: border }}>
-                      TANGGAL :<br />
-                      {formatDate(invoice.date)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h2 className="invoice-section-title">DETAIL PESANAN</h2>
-
-      {baps.map((bap) => (
-        <table className="invoice-table" key={bap.id}>
-          <thead>
-            <tr>
-              <th>
-                {bap.title}
-                {bap.description ? ` ${bap.description}` : ''}
-              </th>
-              <th>UNIT</th>
-              <th>HARGA SATUAN</th>
-              <th>SUB TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bap.items.map((item) => (
-              <tr key={item.id ?? item.sortOrder}>
-                <td>{item.serviceName}</td>
-                <td>{item.unit}</td>
-                <td>{currency.format(item.unitPrice)}</td>
-                <td>{currency.format(item.subtotal)}</td>
-              </tr>
-            ))}
-            <tr className="invoice-subtotal">
-              <td colSpan={3}>TOTAL</td>
-              <td>{currency.format(bap.totalAmount)}</td>
-            </tr>
-          </tbody>
-        </table>
-      ))}
-
-      {/* ── GRAND TOTAL + FOOTER (kept together, never page-break inside) ── */}
-      <div style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-        <div className="invoice-grand-total">
-          <strong>TOTAL KESELURUHAN :</strong>
-          <strong>{currency.format(invoice.totalAmount)}</strong>
-        </div>
-
-        {/* ── FOOTER: Note + Tanda Tangan ── */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '18mm' }}>
-          <tbody>
-            <tr>
-              <td style={{ verticalAlign: 'top', lineHeight: '1.45' }}>
-                <strong><u>Note :</u></strong>
-                <p style={{ margin: '14px 0 12px' }}>Silahkan transfer ke rekening:</p>
-                <strong>
-                  {settings?.bankAccount ?? '0548985555'} ({settings?.bankName ?? 'BCA'})<br />
-                  a/n {settings?.bankAccountName ?? 'BERKARYA SATU TUJUAN CV'}
-                </strong>
-              </td>
-              <td style={{ verticalAlign: 'top', textAlign: 'center', width: '48mm', lineHeight: '1.45' }}>
-                <p style={{ margin: '0 0 2mm' }}>Hormat Kami,</p>
-                <div style={{ display: 'block', textAlign: 'center' }}>
-                  {settings?.signatureDataUrl && (
-                    <img src={settings.signatureDataUrl} alt="Tanda tangan admin" style={{ display: 'block', width: '35mm', height: '18mm', objectFit: 'contain', margin: '0 auto' }} />
-                  )}
-                  <strong style={{ display: 'block' }}>{settings?.signerName ?? 'Muhamad Zidan Fauzan'}</strong>
-                </div>
-                <span style={{ fontSize: '10pt' }}>(Service Admin)</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      )}
     </div>
   )
 }
@@ -315,37 +171,37 @@ export function InvoicesPage() {
       let receiptImage: string | undefined = undefined
       let invoiceImages: string[] | undefined = undefined
 
-      if (printRequest.documentType === 'invoice') {
-        const invoiceEl = document.querySelector('.invoice-root') as HTMLElement | null
-        if (invoiceEl) {
-          const canvas = await toCanvas(invoiceEl, { pixelRatio: 2 })
-          const a4Ratio = 297 / 210
-          const pageHeight = Math.round(canvas.width * a4Ratio)
+      const invoiceEl = document.querySelector('.invoice-root') as HTMLElement | null
+      if (invoiceEl) {
+        const canvas = await toCanvas(invoiceEl, { pixelRatio: 2 })
+        const a4Ratio = 297 / 210
+        const pageHeight = Math.round(canvas.width * a4Ratio)
 
-          if (canvas.height <= pageHeight * 1.05) {
-            invoiceImages = [canvas.toDataURL('image/png')]
-          } else {
-            const pagesCount = Math.ceil(canvas.height / pageHeight)
-            invoiceImages = []
-            for (let i = 0; i < pagesCount; i++) {
-              const pCanvas = document.createElement('canvas')
-              pCanvas.width = canvas.width
-              pCanvas.height = pageHeight
-              const ctx = pCanvas.getContext('2d')
-              if (ctx) {
-                ctx.fillStyle = '#ffffff'
-                ctx.fillRect(0, 0, pCanvas.width, pCanvas.height)
-                ctx.drawImage(
-                  canvas,
-                  0, i * pageHeight, canvas.width, pageHeight,
-                  0, 0, canvas.width, pageHeight
-                )
-                invoiceImages.push(pCanvas.toDataURL('image/png'))
-              }
+        if (canvas.height <= pageHeight * 1.05) {
+          invoiceImages = [canvas.toDataURL('image/png')]
+        } else {
+          const pagesCount = Math.ceil(canvas.height / pageHeight)
+          invoiceImages = []
+          for (let i = 0; i < pagesCount; i++) {
+            const pCanvas = document.createElement('canvas')
+            pCanvas.width = canvas.width
+            pCanvas.height = pageHeight
+            const ctx = pCanvas.getContext('2d')
+            if (ctx) {
+              ctx.fillStyle = '#ffffff'
+              ctx.fillRect(0, 0, pCanvas.width, pCanvas.height)
+              ctx.drawImage(
+                canvas,
+                0, i * pageHeight, canvas.width, pageHeight,
+                0, 0, canvas.width, pageHeight
+              )
+              invoiceImages.push(pCanvas.toDataURL('image/png'))
             }
           }
         }
+      }
 
+      if (printRequest.documentType === 'invoice') {
         const rcElement = document.querySelector('.rc') as HTMLElement | null
         if (rcElement) {
           const oldTransform = rcElement.style.transform

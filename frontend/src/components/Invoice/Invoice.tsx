@@ -55,6 +55,8 @@ export interface InvoiceProps {
   /** <<[TOTAL]>> — Default: jumlah total semua section */
   total?: Money;
 
+  /** Label untuk nomor dokumen. Default: "NO INVOICE :" */
+  noLabel?: string;
   /** Gambar kop (logo + judul INVOICE + alamat). Default: /invoice-header.png */
   headerSrc?: string;
   /** Blok "Note" di kiri bawah */
@@ -144,6 +146,7 @@ const toNum = (v: Money | undefined) => (typeof v === "number" ? v : undefined);
 
 export function Invoice({
   noInvoice,
+  noLabel = "NO INVOICE :",
   tanggal,
   toko,
   sections,
@@ -233,7 +236,7 @@ export function Invoice({
                       BILL TO
                     </td>
                     <td style={td(edges(0, 1, 0, 1))} />
-                    <td style={td({ ...edges(1, 1, 1, 1), fontWeight: 700 })}>NO INVOICE :</td>
+                    <td style={td({ ...edges(1, 1, 1, 1), fontWeight: 700 })}>{noLabel}</td>
                     <td style={td({ ...edges(1, 1, 1, 1), fontWeight: 700 })}>TANGGAL :</td>
                   </tr>
                   <tr style={{ height: tw(145) }}>
