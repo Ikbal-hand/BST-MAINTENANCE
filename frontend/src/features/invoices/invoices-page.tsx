@@ -342,10 +342,42 @@ export function InvoicesPage() {
     try {
       const { pdf } = await import('@react-pdf/renderer')
       const { InvoicePdfDocument } = await import('./invoice-pdf-document')
-      const { toPng } = await import('html-to-image')
+      const { toCanvas, toPng } = await import('html-to-image')
 
       let receiptImage: string | undefined = undefined
+      let invoiceImages: string[] | undefined = undefined
+
       if (printRequest.documentType === 'invoice') {
+        const invoiceEl = document.querySelector('.invoice-root') as HTMLElement | null
+        if (invoiceEl) {
+          const canvas = await toCanvas(invoiceEl, { pixelRatio: 2 })
+          const a4Ratio = 297 / 210
+          const pageHeight = Math.round(canvas.width * a4Ratio)
+
+          if (canvas.height <= pageHeight * 1.05) {
+            invoiceImages = [canvas.toDataURL('image/png')]
+          } else {
+            const pagesCount = Math.ceil(canvas.height / pageHeight)
+            invoiceImages = []
+            for (let i = 0; i < pagesCount; i++) {
+              const pCanvas = document.createElement('canvas')
+              pCanvas.width = canvas.width
+              pCanvas.height = pageHeight
+              const ctx = pCanvas.getContext('2d')
+              if (ctx) {
+                ctx.fillStyle = '#ffffff'
+                ctx.fillRect(0, 0, pCanvas.width, pCanvas.height)
+                ctx.drawImage(
+                  canvas,
+                  0, i * pageHeight, canvas.width, pageHeight,
+                  0, 0, canvas.width, pageHeight
+                )
+                invoiceImages.push(pCanvas.toDataURL('image/png'))
+              }
+            }
+          }
+        }
+
         const rcElement = document.querySelector('.rc') as HTMLElement | null
         if (rcElement) {
           const oldTransform = rcElement.style.transform
@@ -355,7 +387,15 @@ export function InvoicesPage() {
         }
       }
 
-      const doc = <InvoicePdfDocument invoice={printRequest.invoice} documentType={printRequest.documentType} settings={settings.data} receiptImage={receiptImage} />
+      const doc = (
+        <InvoicePdfDocument
+          invoice={printRequest.invoice}
+          documentType={printRequest.documentType}
+          settings={settings.data}
+          receiptImage={receiptImage}
+          invoiceImages={invoiceImages}
+        />
+      )
       const blob = await pdf(doc).toBlob()
 
       const prefix = printRequest.documentType === 'sph' ? 'SPH' : 'Tagihan Invoice'

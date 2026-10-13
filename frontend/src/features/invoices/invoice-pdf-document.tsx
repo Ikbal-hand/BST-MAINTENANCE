@@ -84,15 +84,40 @@ export function InvoicePdfDocument({
   documentType,
   settings,
   receiptImage,
+  invoiceImages,
 }: {
   invoice: Invoice
   documentType: 'invoice' | 'sph'
   settings?: WorkspaceSettings
   receiptImage?: string
+  invoiceImages?: string[]
 }) {
   const baps = (invoice.baps.length ? invoice.baps : invoice.bap ? [invoice.bap] : []).filter(
     (bap): bap is NonNullable<typeof bap> => Boolean(bap),
   )
+
+  if (documentType === 'invoice' && invoiceImages && invoiceImages.length > 0) {
+    return (
+      <Document>
+        {invoiceImages.map((img, idx) => (
+          <Page key={idx} size="A4" style={{ padding: 0 }}>
+            <Image src={img} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </Page>
+        ))}
+
+        <Page size="A4" style={{ padding: '15mm', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Text style={{ fontSize: 17, fontFamily: 'Helvetica-Bold', letterSpacing: 1, marginBottom: 20, textAlign: 'center' }}>KWITANSI</Text>
+          {receiptImage ? (
+             <Image src={receiptImage} style={{ width: '100%', objectFit: 'contain' }} />
+          ) : (
+            <View>
+               <Text>Kuitansi HTML belum ter-render atau gambar tidak tersedia.</Text>
+            </View>
+          )}
+        </Page>
+      </Document>
+    )
+  }
 
   return (
     <Document>
