@@ -96,7 +96,7 @@ export function InvoicePdfDocument({
     (bap): bap is NonNullable<typeof bap> => Boolean(bap),
   )
 
-  if (documentType === 'invoice' && invoiceImages && invoiceImages.length > 0) {
+  if (invoiceImages && invoiceImages.length > 0) {
     return (
       <Document>
         {invoiceImages.map((img, idx) => (
@@ -105,16 +105,18 @@ export function InvoicePdfDocument({
           </Page>
         ))}
 
-        <Page size="A4" style={{ padding: '15mm', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Text style={{ fontSize: 17, fontFamily: 'Helvetica-Bold', letterSpacing: 1, marginBottom: 20, textAlign: 'center' }}>KWITANSI</Text>
-          {receiptImage ? (
-             <Image src={receiptImage} style={{ width: '100%', objectFit: 'contain' }} />
-          ) : (
-            <View>
-               <Text>Kuitansi HTML belum ter-render atau gambar tidak tersedia.</Text>
-            </View>
-          )}
-        </Page>
+        {documentType === 'invoice' && (
+          <Page size="A4" style={{ padding: '15mm', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Text style={{ fontSize: 17, fontFamily: 'Helvetica-Bold', letterSpacing: 1, marginBottom: 20, textAlign: 'center' }}>KWITANSI</Text>
+            {receiptImage ? (
+               <Image src={receiptImage} style={{ width: '100%', objectFit: 'contain' }} />
+            ) : (
+              <View>
+                 <Text>Kuitansi HTML belum ter-render atau gambar tidak tersedia.</Text>
+              </View>
+            )}
+          </Page>
+        )}
       </Document>
     )
   }
