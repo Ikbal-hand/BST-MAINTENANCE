@@ -378,6 +378,20 @@ export function InvoicesPage() {
       document.body.removeChild(link)
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (error) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('dynamically imported module') ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('Importing a module script failed'))
+      ) {
+        setPopup({
+          type: 'loading',
+          title: 'Memperbarui aplikasi...',
+          description: 'Aplikasi baru saja diperbarui. Halaman sedang dimuat ulang.',
+        })
+        window.setTimeout(() => window.location.reload(), 1200)
+        return
+      }
       setPopup({
         type: 'error',
         title: 'Gagal mengunduh PDF',
