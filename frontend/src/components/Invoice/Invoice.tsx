@@ -147,7 +147,6 @@ const toNum = (v: Money | undefined) => (typeof v === "number" ? v : undefined);
 export function Invoice({
   noInvoice,
   noLabel = "NO INVOICE :",
-  tanggal,
   toko,
   sections,
   total,
@@ -245,7 +244,7 @@ export function Invoice({
                     </td>
                     <td style={td(edges(0, 1, 0, 1))} />
                     <td style={td({ ...edges(1, 1, 1, 1), fontWeight: 700 })}>{noInvoice}</td>
-                    <td style={td(edges(1, 1, 1, 1))}>{tanggal}</td>
+                    <td style={td(edges(1, 1, 1, 1))}></td>
                   </tr>
                   <tr style={{ height: tw(420) }}>
                     <td style={td(edges(0, 0, 0, 1))} />
