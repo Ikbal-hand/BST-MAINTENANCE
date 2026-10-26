@@ -72,7 +72,6 @@ model Store {
   name         String
   storeType    String
   address      String?
-  ownerName    String?
   ownerCompany String?
   isActive     Boolean   @default(true)
   baps         Bap[]

@@ -8,7 +8,8 @@ import { EventPopup, type EventPopupType } from '../../components/ui/event-popup
 import { createStore, deleteStore, getStores, importStores, updateStore, type Store, type StoreImportReport, type StoreImportRow, type StoreInput } from './stores-api'
 import { StoreDetailPopup } from './store-detail-popup'
 
-const emptyForm: StoreInput = { code: '', name: '', storeType: 'REG', address: '', ownerCompany: '' }
+const REG_DEFAULT_OWNER = 'PT Sumber Alfaria Trijaya Tbk.'
+const emptyForm: StoreInput = { code: '', name: '', storeType: 'REG', address: '', ownerCompany: REG_DEFAULT_OWNER }
 
 export function StoresPage() {
   const [search, setSearch] = useState('')
@@ -75,7 +76,7 @@ export function StoresPage() {
       if (!sheet) throw new Error('File Excel tidak memiliki sheet yang bisa dibaca.')
 
       const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' })
-      const requiredColumns = ['code', 'name', 'storeType', 'address', 'ownerName', 'ownerCompany']
+      const requiredColumns = ['code', 'name', 'storeType', 'address', 'ownerCompany']
       const headers = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, blankrows: false })[0] ?? []
       const missingColumns = requiredColumns.filter((column) => !headers.includes(column))
       if (missingColumns.length > 0) throw new Error(`Kolom template tidak lengkap: ${missingColumns.join(', ')}.`)
@@ -91,10 +92,9 @@ export function StoresPage() {
           rowNumber: index + 2,
           code,
           name,
-          storeType,
-          address: String(row.address).trim(),
-          ownerName: String(row.ownerName).trim(),
-          ownerCompany: String(row.ownerCompany).trim(),
+          storeType: storeType as 'REG' | 'FRC',
+          address: String(row.address || '').trim(),
+          ownerCompany: storeType === 'REG' ? REG_DEFAULT_OWNER : (String(row.ownerCompany || '').trim() || undefined),
         }
       })
 
@@ -118,9 +118,10 @@ export function StoresPage() {
   async function downloadTemplate() {
     const XLSX = await import('xlsx')
     const worksheet = XLSX.utils.json_to_sheet([
-      { code: 'B032', name: 'CIKUTRA', storeType: 'REG', address: 'Alamat toko', ownerName: '', ownerCompany: 'PT Sumber Alfaria Trijaya Tbk.' },
-    ], { header: ['code', 'name', 'storeType', 'address', 'ownerName', 'ownerCompany'] })
-    worksheet['!cols'] = [{ wch: 16 }, { wch: 24 }, { wch: 14 }, { wch: 42 }, { wch: 24 }, { wch: 34 }]
+      { code: 'B032', name: 'CIKUTRA', storeType: 'REG', address: 'Alamat toko', ownerCompany: REG_DEFAULT_OWNER },
+      { code: 'F101', name: 'FRANCHISE SAMPLE', storeType: 'FRC', address: 'Alamat toko FRC', ownerCompany: 'CV Mitra Sejahtera' },
+    ], { header: ['code', 'name', 'storeType', 'address', 'ownerCompany'] })
+    worksheet['!cols'] = [{ wch: 16 }, { wch: 24 }, { wch: 14 }, { wch: 42 }, { wch: 34 }]
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Toko')
     XLSX.writeFile(workbook, 'template-import-toko.xlsx')
@@ -139,13 +140,17 @@ export function StoresPage() {
     event.preventDefault()
     setFormMessage('')
     setPopup({ type: 'loading', title: 'Menyimpan toko', description: 'Data toko sedang diproses.' })
-    createMutation.mutate(form)
+    const payload: StoreInput = {
+      ...form,
+      ownerCompany: form.storeType === 'REG' ? REG_DEFAULT_OWNER : (form.ownerCompany?.trim() || null),
+    }
+    createMutation.mutate(payload)
   }
 
   const storeColumns: DataTableColumn<Store>[] = [
     { key: 'store', header: 'Toko', render: (store) => <><strong>{store.name}</strong><small>{store.code}</small></> },
     { key: 'type', header: 'Tipe', render: (store) => <span className="store-type-badge">{store.storeType}</span> },
-    { key: 'owner', header: 'Pemilik', render: (store) => store.ownerCompany ?? 'Belum diisi' },
+    { key: 'owner', header: 'Milik', render: (store) => (store.storeType === 'REG' ? REG_DEFAULT_OWNER : store.ownerCompany) || 'Belum diisi' },
     {
       key: 'actions',
       header: 'Aksi',
@@ -223,8 +228,27 @@ export function StoresPage() {
             <form onSubmit={submit} className="store-form">
               <label>Kode toko<input required maxLength={30} value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value.toUpperCase() })} placeholder="Contoh: B032" /></label>
               <label>Nama toko<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Contoh: CIKUTRA" /></label>
-              <label>Tipe toko<select value={form.storeType} onChange={(event) => setForm({ ...form, storeType: event.target.value as StoreInput['storeType'] })}><option value="REG">REG</option><option value="FRC">FRC</option></select></label>
-              <label>Perusahaan pemilik<input value={form.ownerCompany} onChange={(event) => setForm({ ...form, ownerCompany: event.target.value })} placeholder="Nama perusahaan" /></label>
+              <label>Tipe toko
+                <select
+                  value={form.storeType}
+                  onChange={(event) => {
+                    const nextType = event.target.value as StoreInput['storeType']
+                    setForm({
+                      ...form,
+                      storeType: nextType,
+                      ownerCompany: nextType === 'REG' ? REG_DEFAULT_OWNER : '',
+                    })
+                  }}
+                >
+                  <option value="REG">REG</option>
+                  <option value="FRC">FRC</option>
+                </select>
+              </label>
+              {form.storeType === 'REG' ? (
+                <label>Milik<input value={REG_DEFAULT_OWNER} disabled readOnly title="Otomatis untuk tipe REG" /></label>
+              ) : (
+                <label>Milik (Pemilik)<input value={form.ownerCompany ?? ''} onChange={(event) => setForm({ ...form, ownerCompany: event.target.value })} placeholder="Opsional (boleh kosong jika belum diketahui)" /></label>
+              )}
               <label>Alamat<textarea value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} rows={3} placeholder="Alamat toko" /></label>
               <Button type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? 'Menyimpan...' : 'Simpan toko'}</Button>
               {formMessage && <p className="form-message" role="status">{formMessage}</p>}

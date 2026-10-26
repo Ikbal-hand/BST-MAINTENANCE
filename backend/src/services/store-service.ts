@@ -1,6 +1,8 @@
 import { ConflictError, NotFoundError } from '../errors.js'
 import { StoreRepository } from '../repositories/store-repository.js'
 
+export const REG_STORE_OWNER = 'PT Sumber Alfaria Trijaya Tbk.'
+
 type ImportStoreRow = Parameters<StoreRepository['create']>[1] & { rowNumber: number }
 type ImportResult = {
   rowNumber: number
@@ -33,7 +35,12 @@ export class StoreService {
 
   async create(workspaceId: string, data: Parameters<StoreRepository['create']>[1]) {
     try {
-      return await this.stores.create(workspaceId, data)
+      const isReg = data.storeType.toUpperCase() === 'REG'
+      const payload = {
+        ...data,
+        ownerCompany: isReg ? REG_STORE_OWNER : (data.ownerCompany?.trim() || null),
+      }
+      return await this.stores.create(workspaceId, payload)
     } catch (error) {
       if (this.isUniqueViolation(error)) {
         throw new ConflictError('Kode toko sudah digunakan di workspace ini')
@@ -43,7 +50,14 @@ export class StoreService {
   }
 
   async bulkCreate(workspaceId: string, data: Parameters<StoreRepository['bulkCreate']>[1]) {
-    return this.stores.bulkCreate(workspaceId, data)
+    const payload = data.map((item) => {
+      const isReg = item.storeType.toUpperCase() === 'REG'
+      return {
+        ...item,
+        ownerCompany: isReg ? REG_STORE_OWNER : (item.ownerCompany?.trim() || null),
+      }
+    })
+    return this.stores.bulkCreate(workspaceId, payload)
   }
 
   async importWithReport(workspaceId: string, rows: ImportStoreRow[]) {
@@ -79,7 +93,11 @@ export class StoreService {
         continue
       }
 
-      pendingRows.push(row)
+      const isReg = row.storeType.toUpperCase() === 'REG'
+      pendingRows.push({
+        ...row,
+        ownerCompany: isReg ? REG_STORE_OWNER : (row.ownerCompany?.trim() || null),
+      })
     }
 
     if (pendingRows.length > 0) {
@@ -118,7 +136,24 @@ export class StoreService {
   }
 
   async update(workspaceId: string, id: string, data: Parameters<StoreRepository['update']>[2]) {
-    const result = await this.stores.update(workspaceId, id, data)
+    let ownerCompany = data.ownerCompany !== undefined ? (data.ownerCompany?.trim() || null) : undefined
+    if (data.storeType) {
+      if (data.storeType.toUpperCase() === 'REG') {
+        ownerCompany = REG_STORE_OWNER
+      }
+    } else if (data.ownerCompany !== undefined) {
+      const existing = await this.stores.findById(workspaceId, id)
+      if (existing?.storeType.toUpperCase() === 'REG') {
+        ownerCompany = REG_STORE_OWNER
+      }
+    }
+
+    const payload = {
+      ...data,
+      ...(ownerCompany !== undefined ? { ownerCompany } : {}),
+    }
+
+    const result = await this.stores.update(workspaceId, id, payload)
     if (result.count === 0) throw new NotFoundError('Toko tidak ditemukan')
     return this.stores.findById(workspaceId, id)
   }

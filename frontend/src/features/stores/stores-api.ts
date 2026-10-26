@@ -6,7 +6,6 @@ export interface Store {
   name: string
   storeType: 'REG' | 'FRC'
   address: string | null
-  ownerName: string | null
   ownerCompany: string | null
 }
 
@@ -15,8 +14,7 @@ export interface StoreInput {
   name: string
   storeType: 'REG' | 'FRC'
   address?: string
-  ownerName?: string
-  ownerCompany?: string
+  ownerCompany?: string | null
 }
 
 export interface StoreList {

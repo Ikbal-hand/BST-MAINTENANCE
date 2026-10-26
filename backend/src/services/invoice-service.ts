@@ -94,7 +94,7 @@ export class InvoiceService {
       documentType: 'SPH' as const,
       invoiceNumber: invoice.number,
       invoiceDate: invoice.date,
-      billTo: invoice.store.ownerCompany ?? invoice.store.ownerName ?? null,
+      billTo: invoice.store.ownerCompany ?? null,
       storeName: invoice.store.name,
       storeCode: invoice.store.code,
       purpose: invoice.purpose,

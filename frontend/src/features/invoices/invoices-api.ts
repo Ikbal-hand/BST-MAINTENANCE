@@ -11,7 +11,7 @@ export interface Invoice {
   totalAmount: number
   amountWords: string | null
   status: InvoiceStatus
-  store: { id: string; code: string; name: string; ownerCompany: string | null }
+  store: { id: string; code: string; name: string; storeType?: 'REG' | 'FRC'; ownerCompany: string | null }
   bap: Bap | null
   baps: Bap[]
 }

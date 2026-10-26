@@ -48,8 +48,7 @@ export class StoreRepository {
     name: string
     storeType: string
     address?: string
-    ownerName?: string
-    ownerCompany?: string
+    ownerCompany?: string | null
   }) {
     return this.database.store.create({ data: { ...data, workspaceId } })
   }
@@ -59,8 +58,7 @@ export class StoreRepository {
     name: string
     storeType: string
     address?: string
-    ownerName?: string
-    ownerCompany?: string
+    ownerCompany?: string | null
   }>) {
     return this.database.store.createMany({
       data: data.map((store) => ({ ...store, workspaceId })),
@@ -73,8 +71,7 @@ export class StoreRepository {
     name?: string
     storeType?: string
     address?: string
-    ownerName?: string
-    ownerCompany?: string
+    ownerCompany?: string | null
   }) {
     return this.database.store.updateMany({
       where: { id, workspaceId, isActive: true },

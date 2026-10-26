@@ -50,6 +50,9 @@ function InvoicePrint({
   )
 
   const isSph = documentType === 'sph'
+  const storeOwner = invoice.store.storeType === 'REG'
+    ? 'PT Sumber Alfaria Trijaya Tbk.'
+    : (invoice.store.ownerCompany || '—')
 
   const sections = baps.map((bap) => ({
     judul: bap.title,
@@ -73,7 +76,7 @@ function InvoicePrint({
         toko={{
           kode: invoice.store.code,
           nama: invoice.store.name,
-          milik: invoice.store.ownerCompany ?? '—',
+          milik: storeOwner,
         }}
         sections={sections}
         total={invoice.totalAmount}
@@ -103,7 +106,7 @@ function InvoicePrint({
             </div>
             <div className="main">
               <div className="r r1"><div className="lb">No.</div><div className="val ruled"><span>{invoice.number}</span></div></div>
-              <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{invoice.store.ownerCompany ?? '—'}</span></div></div>
+              <div className="r"><div className="lb">Sudah terima dari</div><div className="val ruled"><span>{storeOwner}</span></div></div>
               <div className="r r-terb"><div className="lb">Banyaknya uang</div><div className="val"><span style={{ textTransform: 'capitalize' }}>{invoice.amountWords ? invoice.amountWords.toLowerCase() : '—'}</span></div></div>
               <div className="r r-untuk"><div className="lb">Untuk pembayaran</div><div className="val ruled"><span>{invoice.purpose ?? baps[0]?.title ?? '—'}</span></div></div>
               <div className="bottom">

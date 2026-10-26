@@ -14,8 +14,7 @@ const storeSchema = z.object({
   name: z.string().trim().min(1).max(150),
   storeType: z.enum(['REG', 'FRC']),
   address: z.string().trim().max(500).optional(),
-  ownerName: z.string().trim().max(150).optional(),
-  ownerCompany: z.string().trim().max(150).optional(),
+  ownerCompany: z.string().trim().max(150).nullable().optional(),
 })
 
 const importStoreSchema = storeSchema.extend({

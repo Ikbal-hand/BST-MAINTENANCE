@@ -151,7 +151,11 @@ export function InvoicePdfDocument({
         <View style={styles.metaRow}>
           <View style={styles.metaBox}>
             <Text style={styles.billToTitle}>BILL TO</Text>
-            <Text style={styles.billToCompany}>{invoice.store.ownerCompany ?? '—'}</Text>
+            <Text style={styles.billToCompany}>
+              {invoice.store.storeType === 'REG'
+                ? 'PT Sumber Alfaria Trijaya Tbk.'
+                : (invoice.store.ownerCompany || '—')}
+            </Text>
             <View style={styles.billToAddress}>
               <Text>TOKO : {invoice.store.name}</Text>
               <Text>KODE : {invoice.store.code}</Text>
