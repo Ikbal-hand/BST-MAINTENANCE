@@ -82,7 +82,7 @@ export function StoreDetailPopup({ store, editing, busy, onClose, onEdit, onSave
           <>
             <dl className="store-detail-list">
               <div><dt>Tipe toko</dt><dd>{store.storeType}</dd></div>
-              <div><dt>Milik</dt><dd>{(store.storeType === 'REG' ? REG_DEFAULT_OWNER : store.ownerCompany) || 'Belum diisi'}</dd></div>
+              <div><dt>Milik</dt><dd>{(store.storeType === 'REG' ? REG_DEFAULT_OWNER : store.ownerCompany) || '—'}</dd></div>
               <div><dt>Alamat</dt><dd>{store.address ?? 'Belum diisi'}</dd></div>
             </dl>
             <div className="store-detail-actions"><Button type="button" onClick={onEdit}><Pencil size={14} /> Edit toko</Button><Button type="button" variant="outline" onClick={onDelete}><Trash2 size={14} /> Hapus</Button></div>

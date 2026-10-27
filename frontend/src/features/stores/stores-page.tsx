@@ -150,7 +150,7 @@ export function StoresPage() {
   const storeColumns: DataTableColumn<Store>[] = [
     { key: 'store', header: 'Toko', render: (store) => <><strong>{store.name}</strong><small>{store.code}</small></> },
     { key: 'type', header: 'Tipe', render: (store) => <span className="store-type-badge">{store.storeType}</span> },
-    { key: 'owner', header: 'Milik', render: (store) => (store.storeType === 'REG' ? REG_DEFAULT_OWNER : store.ownerCompany) || 'Belum diisi' },
+    { key: 'owner', header: 'Milik', render: (store) => (store.storeType === 'REG' ? REG_DEFAULT_OWNER : store.ownerCompany) || '—' },
     {
       key: 'actions',
       header: 'Aksi',

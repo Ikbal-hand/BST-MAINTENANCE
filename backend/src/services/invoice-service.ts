@@ -94,7 +94,9 @@ export class InvoiceService {
       documentType: 'SPH' as const,
       invoiceNumber: invoice.number,
       invoiceDate: invoice.date,
-      billTo: invoice.store.ownerCompany ?? null,
+      billTo: invoice.store.storeType === 'REG'
+        ? 'PT Sumber Alfaria Trijaya Tbk.'
+        : (invoice.store.ownerCompany ?? null),
       storeName: invoice.store.name,
       storeCode: invoice.store.code,
       purpose: invoice.purpose,
